@@ -56,7 +56,7 @@ public class myClient {
 
         String respostaCredenciais = String.valueOf(in.readObject());
 
-        if (respostaCredenciais.equals("")) {
+        if (respostaCredenciais.equals("User autenticado")) {
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, clientUser);
@@ -119,6 +119,7 @@ public class myClient {
             System.out.println(texto);
 
         } else if ((comando.split(" ")[0].equals("e") || comando.split(" ")[0].equals("exit"))) {
+            System.out.println("Programa vai terminar");
             out.writeObject("exit");
             out.close();
             in.close();

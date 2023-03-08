@@ -100,12 +100,11 @@ public class myServer{
 						inStream.close();
 						outStream.close();
 						Thread.currentThread().interrupt();
-					} else if (autenticacao.equals("Registado com sucesso")) {
+					}
+
+					if (autenticacao.equals("Registado com sucesso")) {
 						//Quando se regista um utilizador novo, este é adicionado ao ficheiro users.txt e ao arraylist users
 						userRegister(user);
-						outStream.writeObject("Registado com sucesso");
-					} else if (autenticacao.equals("Autenticado com sucesso")) {
-						outStream.writeObject("Autenticado com sucesso");
 					}
 				}else{ //Caso não exista ficheiro users.txt cria-o e adiciona o user atual
 					Path path = Paths.get("files/serverFiles/");
