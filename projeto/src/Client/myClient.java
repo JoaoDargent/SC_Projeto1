@@ -84,48 +84,68 @@ public class myClient {
         String[] comandoSplit = comando.split(" ");
 
 
-        if (comando.split(" ")[0].equals("a") || comando.split(" ")[0].equals("add")) {
+        switch (comando.split(" ")[0]) {
+            case "a":
+            case "add":
 
-        } else if ((comando.split(" ")[0].equals("s") || comando.split(" ")[0].equals("sell"))) {
+                break;
+            case "s":
+            case "sell":
 
-        } else if ((comando.split(" ")[0].equals("v") || comando.split(" ")[0].equals("view"))) {
+                break;
+            case "v":
+            case "view":
 
-        } else if ((comando.split(" ")[0].equals("b") || comando.split(" ")[0].equals("buy"))) {
+                break;
+            case "b":
+            case "buy":
 
-        } else if ((comando.split(" ")[0].equals("w") || comando.split(" ")[0].equals("wallet"))) {
-            out.writeObject("wallet");
-            int wallet = (int) in.readObject();
-            System.out.println("O seu saldo é: " + wallet);
-        } else if ((comando.split(" ")[0].equals("c") || comando.split(" ")[0].equals("classify"))) {
+                break;
+            case "w":
+            case "wallet":
+                out.writeObject("wallet");
+                int wallet = (int) in.readObject();
+                System.out.println("O seu saldo é: " + wallet);
+                break;
+            case "c":
+            case "classify":
 
-        } else if ((comando.split(" ")[0].equals("t") || comando.split(" ")[0].equals("talk"))) {
+                break;
+            case "t":
+            case "talk":
 
-        } else if ((comando.split(" ")[0].equals("r") || comando.split(" ")[0].equals("read"))) {
+                break;
+            case "r":
+            case "read":
 
-        } else if ((comando.split(" ")[0].equals("l") || comando.split(" ")[0].equals("L"))) {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("A lista de comandos eh a seguinte:\n");
-            stringBuilder.append("add <wine> <image>\n");
-            stringBuilder.append("sell <wine> <value> <quantity>\n");
-            stringBuilder.append("view <wine>\n");
-            stringBuilder.append("buy <wine> <seller> <quantity>\n");
-            stringBuilder.append("wallet\n");
-            stringBuilder.append("classify <wine> <stars>\n");
-            stringBuilder.append("talk <user> <message>\n");
-            stringBuilder.append("read\n");
-            stringBuilder.append("exit - caso queira encerrar de forma segura o client\n");
-            String texto = stringBuilder.toString();
+                break;
+            case "l":
+            case "L":
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("A lista de comandos eh a seguinte:\n");
+                stringBuilder.append("add <wine> <image>\n");
+                stringBuilder.append("sell <wine> <value> <quantity>\n");
+                stringBuilder.append("view <wine>\n");
+                stringBuilder.append("buy <wine> <seller> <quantity>\n");
+                stringBuilder.append("wallet\n");
+                stringBuilder.append("classify <wine> <stars>\n");
+                stringBuilder.append("talk <user> <message>\n");
+                stringBuilder.append("read\n");
+                stringBuilder.append("exit - caso queira encerrar de forma segura o client\n");
+                String texto = stringBuilder.toString();
 
-            System.out.println(texto);
+                System.out.println(texto);
 
-        } else if ((comando.split(" ")[0].equals("e") || comando.split(" ")[0].equals("exit"))) {
-            System.out.println("Programa vai terminar");
-            out.writeObject("exit");
-            out.close();
-            in.close();
-            scanner.close();
-            cSocket.close();
-            System.exit(0);
+                break;
+            case "e":
+            case "exit":
+                System.out.println("Programa vai terminar");
+                out.writeObject("exit");
+                out.close();
+                in.close();
+                scanner.close();
+                cSocket.close();
+                System.exit(0);
         }
 
 

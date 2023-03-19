@@ -6,9 +6,7 @@ package Server;
 *
 ***************************************************************************/
 
-import Library.FileManager;
-import Library.User;
-import Library.UserManager;
+import Library.*;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -23,6 +21,7 @@ public class myServer{
 
 	private UserManager userManager = new UserManager();
 	private FileManager fileManager = new FileManager();
+	private WineManager wineManager = new WineManager();
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("servidor: main");
@@ -120,30 +119,51 @@ public class myServer{
 					String comando = inStream.readObject().toString();
 					String[] partsCmd = comando.split(" ");
 
-					//I want to make a list of if's like the Client.myClient one but for the server (with partsCmd[0] == "add" for example)
-					if(partsCmd[0] == "add"){
-						//TODO
-					} else if (partsCmd[0] == "sell") {
-						//TODO
-					} else if (partsCmd[0] == "view") {
-						//TODO
-					} else if (partsCmd[0] == "buy") {
-						//TODO
-					} else if (partsCmd[0].equals("wallet")) {
-						//TODO
-						outStream.writeObject(user.getBalance());
+					switch (partsCmd[0]) {
+						case "add":
+							Wine wine = new Wine(partsCmd[1], partsCmd[2]);
+							wineManager.addWine(wine);
+							fileManager.receiveFile(inStream, Path.of("files/serverFiles/Wines/" + wine.getName() + "/"), "image.jpeg");
 
-					} else if (partsCmd[0] == "classify") {
-						//TODO
-					} else if (partsCmd[0] == "talk") {
-						//TODO
-					} else if (partsCmd[0] == "read") {
-						//TODO
-					} else if (partsCmd[0] == "exit") {
-						inStream.close();
-						outStream.close();
-						socket.close();
-						Thread.currentThread().interrupt();
+							break;
+						case "sell":
+							//TODO Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda
+							//Caso o vinho nao exista e devolvido um erro
+							if (!wineManager.checkIfWineExists(partsCmd[1]))
+								outStream.writeObject("Não existe vinho com esse nome");
+							else
+								wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+
+							break;
+						case "view":
+							outStream.writeObject(wineManager.viewWineByName(partsCmd[1]));
+
+							break;
+						case "buy":
+							//TODO
+							wineManager.buyWine(userManager, partsCmd[1], partsCmd[2], Integer.parseInt(partsCmd[3]));
+							break;
+						case "wallet":
+							outStream.writeObject(user.getBalance());
+
+							break;
+						case "classify":
+
+							outStream.writeObject(wineManager.classifyWine(fileManager,partsCmd[1], Integer.parseInt(partsCmd[2])));
+
+							break;
+						case "talk":
+							//TODO
+							break;
+						case "read":
+							//TODO
+							break;
+						case "exit":
+							inStream.close();
+							outStream.close();
+							socket.close();
+							Thread.currentThread().interrupt();
+							break;
 					}
 				}
 
