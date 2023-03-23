@@ -12,6 +12,7 @@ import java.util.Scanner;
 public class myClient {
 
     private static Socket cSocket;
+    private FileManager fileManager = new FileManager();
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         System.out.println("Client");
@@ -56,14 +57,16 @@ public class myClient {
 
         String respostaCredenciais = String.valueOf(in.readObject());
 
-        if (respostaCredenciais.equals("User autenticado")) {
+        if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
+                System.out.println("Autenticado com sucesso!");
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, clientUser);
             }
         } else if (respostaCredenciais.equals("Registado com sucesso")) {
             System.out.println(respostaCredenciais);
             while (true) {
+                System.out.println("Registado com sucesso!");
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, clientUser);
             }
@@ -80,14 +83,17 @@ public class myClient {
     }
 
     private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientUser) throws IOException, ClassNotFoundException {
-        String comando = scanner.nextLine();
+        String comando = scanner.next();
         String[] comandoSplit = comando.split(" ");
 
 
-        switch (comando.split(" ")[0]) {
+        switch (comando) {
             case "a":
             case "add":
-
+                String wine = scanner.next();
+                String image = scanner.next();
+                out.writeObject("add " + wine + " " + image);
+                fileManager.sendFile(out, "../", image);
                 break;
             case "s":
             case "sell":

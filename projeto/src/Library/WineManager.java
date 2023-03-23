@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class WineManager {
 
     FileManager fileManager = new FileManager();
-    public final static String winesFolder = "files/serverFiles/Wines/";
+    public final static String winesFolder = "../files/serverFiles/Wines/";
     private ArrayList<Wine> wines;
 
     public WineManager() {

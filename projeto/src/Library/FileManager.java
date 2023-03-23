@@ -52,9 +52,6 @@ public class FileManager {
 
     }
 
-
-
-
     /***
      * Envia um ficheiro para o cliente
      * @param outStream - stream de saida para o cliente
@@ -63,32 +60,20 @@ public class FileManager {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void sendFile(ObjectOutputStream outStream, String path, String extensao) throws IOException, ClassNotFoundException {
-        ////////Tratamento Ficheiro\\\\\\\\
-
-        File file = new File(path);
-        FileInputStream fin = new FileInputStream(file);
-        InputStream input = new BufferedInputStream(fin);
-
-        ///Tamanho Ficheiro em Bytes\\\
-        long fileSize = file.length();
-        outStream.writeObject(fileSize);
-
-        ///Envia Extensão\\\
-        outStream.writeObject(extensao);
-
-        ///Processo de Envio\\\
-
-        byte[] buffer = new byte[1024];
-        int numRead = 0;
-
-        while((numRead = fin.read(buffer)) >= 0){
-            outStream.write(buffer,0,numRead);
-        }
-
+    public void sendFile(ObjectOutputStream outStream, String path, String fileName) throws IOException, ClassNotFoundException {
+        // Create a file object for the file to be sent
+        File file = new File(path + fileName);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        
+        // Create a byte array to hold the file data
+        byte[] fileBytes = new byte[(int) file.length()];
+        // Read the file data into the byte array
+        fileInputStream.read(fileBytes);
+        fileInputStream.close();
+        
+        // Send the file data to the server
+        outStream.write(fileBytes);
         outStream.flush();
-        outStream.close();
-        fin.close();
     }
 
     /***
@@ -99,31 +84,22 @@ public class FileManager {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void receiveFile(ObjectInputStream inStream, Path path, String fileName) throws IOException, ClassNotFoundException {
-        //Recebe tamanho ficheiro
-        long tamanhoFile = (long) inStream.readObject();
-        String extensao = (String) inStream.readObject();
-        int jaLido = 0;
-
-        //Cria ficheiro para onde vai ser escrito o conteúdo vindo do user
-        File f = new File(path + "/" + fileName + extensao);
-        //File f = new File(fileName);
-
-
-        FileOutputStream fout = new FileOutputStream(f);
-        OutputStream output = new BufferedOutputStream(fout);
+    public void receiveFile(ObjectInputStream inStream, String path, String fileName) throws IOException, ClassNotFoundException {
+        File file = new File(path);
+        // make sure the directory exists
+        if(!file.exists()) file.mkdirs();
+        // Create a file output stream for the destination file
+        FileOutputStream fos = new FileOutputStream(new File(file, fileName));
+        
+        // Create a byte array to hold the file data
         byte[] buffer = new byte[1024];
-
-        //Recebe conteúdo do User
-        while(jaLido < tamanhoFile){
-            int lido = inStream.read(buffer);
-            output.write(buffer,0,lido);
-            jaLido += lido;
+        int bytesRead;
+        // Read the file data from the input stream and write it to the output stream
+        while ((bytesRead = inStream.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
         }
 
-        fout.flush();
-        fout.close();
-        output.flush();
-        output.close();
+        fos.flush();
+        fos.close();
     }
 }

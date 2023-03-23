@@ -14,10 +14,12 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 
 public class myServer{
-	public static final String usersPath = "files/serverFiles/users.txt";
+	public static final String filesPath = "../files/serverFiles/";
+	public static final String usersPath = "users.txt";
 
 	private UserManager userManager = new UserManager();
 	private FileManager fileManager = new FileManager();
@@ -49,7 +51,7 @@ public class myServer{
 		}
 
 
-		File usersTxt = new File(usersPath);
+		//File usersTxt = new File(usersPath);
 
 /*
 		TODO load users from file to memory (if file exists)
@@ -88,31 +90,52 @@ public class myServer{
 
 				String credenciais = (String) inStream.readObject();
 				User user = new User(credenciais.split(":")[0], credenciais.split(":")[1]);
+				String login = user.getId() + ":" + user.getPassword();
 
-				File usersFile = new File(usersPath);
-				boolean fileExists = usersFile.exists();
-				if (fileExists) { //Caso exista users.txt
-					String autenticacao = userManager.loginManager(user);
-					outStream.writeObject(autenticacao);
+				File files = new File(filesPath);
+				if(!files.exists()) files.mkdirs();
 
-					if (autenticacao.equals("Password errada")) {
-						inStream.close();
-						outStream.close();
-						Thread.currentThread().interrupt();
+				File usersFile = new File(filesPath + usersPath);
+				Scanner reader;
+				BufferedWriter writer;
+			
+				if (usersFile.exists()) { //Caso exista users.txt
+					reader = new Scanner(usersFile);
+					writer = new BufferedWriter(new FileWriter(usersFile, true));
+					boolean contains = false;
+					boolean wrongLogin = false;
+
+					while(reader.hasNextLine()){
+						String account = reader.nextLine();
+						//utilizador existe
+						if(account.contains(login)){
+							contains = true;
+						//utilizador enviou uma das credenciais errada
+						} else if((account.contains(user.getId()) && !account.contains(user.getPassword()))) {
+							wrongLogin = true;
+						}
 					}
-
-					if (autenticacao.equals("Registado com sucesso")) {
-						//Quando se regista um utilizador novo, este é adicionado ao ficheiro users.txt e ao arraylist users
-						userRegister(user);
+					//se credenciais estão ok
+					if (contains){
+						outStream.writeObject("Autenticado com sucesso");
+					} else {
+						//se utilizador não exite
+						if(wrongLogin == false){
+							userRegister(user);
+							outStream.writeObject("Registado com sucesso");
+						//se utilizador existe mas o par clientID/password está errado
+						} else {
+							outStream.writeObject("Password errada");
+							System.exit(0);
+						}
 					}
+					reader.close();
+					writer.close();
+					
 				}else{ //Caso não exista ficheiro users.txt cria-o e adiciona o user atual
-					Path path = Paths.get("files/serverFiles/");
-					File checkIfExists = new File(path.toString());
-					if (!checkIfExists.exists()) Files.createDirectories(path);
-
 					usersFile.createNewFile();
-					outStream.writeObject("Registado com sucesso");
 					userRegister(user);
+					outStream.writeObject("Registado com sucesso");
 				}
 
 				while(!socket.isClosed()){
@@ -123,8 +146,7 @@ public class myServer{
 						case "add":
 							Wine wine = new Wine(partsCmd[1], partsCmd[2]);
 							wineManager.addWine(wine);
-							fileManager.receiveFile(inStream, Path.of("files/serverFiles/Wines/" + wine.getName() + "/"), "image.jpeg");
-
+							fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", "image.jpg");
 							break;
 						case "sell":
 							//TODO Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda
@@ -181,6 +203,6 @@ public class myServer{
 	private void userRegister(User user){
 		userManager.addUser(user);
 		user.setBalance(200);
-		fileManager.writeContentToFile(new File(usersPath), user.toString(), true);
+		fileManager.writeContentToFile(new File(filesPath + usersPath), user.toString(), true);
 	}
 }
