@@ -11,7 +11,6 @@ public class UserManager {
 
     public void addUser(User user) {
         this.users.add(user);
-
     }
 
     public String loginManager(User user){

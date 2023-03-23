@@ -66,7 +66,6 @@ public class myClient {
         } else if (respostaCredenciais.equals("Registado com sucesso")) {
             System.out.println(respostaCredenciais);
             while (true) {
-                System.out.println("Registado com sucesso!");
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, clientUser);
             }

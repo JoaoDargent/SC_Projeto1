@@ -167,7 +167,6 @@ public class myServer{
 							break;
 						case "wallet":
 							outStream.writeObject(user.getBalance());
-
 							break;
 						case "classify":
 
