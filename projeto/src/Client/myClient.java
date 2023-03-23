@@ -59,7 +59,6 @@ public class myClient {
 
         if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
-                System.out.println("Autenticado com sucesso!");
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, clientUser);
             }
@@ -100,7 +99,10 @@ public class myClient {
                 break;
             case "v":
             case "view":
-
+                String wineV = scanner.next();
+                out.writeObject("view " + wineV);
+                String view = (String) in.readObject();
+                System.out.println(view);
                 break;
             case "b":
             case "buy":

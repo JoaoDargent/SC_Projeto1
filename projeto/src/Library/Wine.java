@@ -16,11 +16,12 @@ public class Wine {
     public Wine(String name, String image) {
         this.name = name;
         this.image = image;
+        this.stock = new ArrayList<String>();
     }
 
     public String view(){
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Nome: " + this.name + "\n Classificação: " + this.stars + "\n Valor: " + getStockPrint());
+        stringBuilder.append("Nome: " + this.name + "\nClassificação: " + this.stars + "\nValor: " + getStockPrint());
         return stringBuilder.toString();
     }
 
@@ -42,7 +43,7 @@ public class Wine {
         int i = 1;
         this.stars += stars/i ;
         i++;
-        File classifyFile = new File("files/serverFiles/Wines/" + this.getName() + "/classify.txt");
+        File classifyFile = new File("../files/serverFiles/Wines/" + this.getName() + "/classify.txt");
         fileManager.writeContentToFile(classifyFile, "i:" + stars, false);
 
 

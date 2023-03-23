@@ -27,17 +27,18 @@ public class WineManager {
         this.wines.add(wine);
 
         //Criar folder do vinho
-        Path path = Paths.get(winesFolder + wine.getName() + "/");
+        Path path = Paths.get(winesFolder + wine.getName());
         Files.createDirectories(path);
 
         //Criar ficheiro de classificação
-        File classify = new File(path + "classify.txt");
+        File classify = new File(path + "/classify.txt");
         classify.createNewFile();
 
         //Criar ficheiro de stock
-        File stock = new File(path + "stock.txt");
+        File stock = new File(path + "/stock.txt");
         stock.createNewFile();
     }
+
     public String viewWineByName(String name){
         for (Wine w : wines){
             if (w.getName().equals(name)){

@@ -19,6 +19,7 @@ import java.util.Scanner;
 
 public class myServer{
 	public static final String filesPath = "../files/serverFiles/";
+	public static final String usersP = "../files/clientFiles/";
 	public static final String usersPath = "users.txt";
 
 	private UserManager userManager = new UserManager();
@@ -96,6 +97,9 @@ public class myServer{
 				if(!files.exists()) files.mkdirs();
 
 				File usersFile = new File(filesPath + usersPath);
+				File usersPFolder = new File(usersP);
+				if(!usersFile.exists()) usersPFolder.mkdirs();
+
 				Scanner reader;
 				BufferedWriter writer;
 			
@@ -155,11 +159,9 @@ public class myServer{
 								outStream.writeObject("Não existe vinho com esse nome");
 							else
 								wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
-
 							break;
 						case "view":
 							outStream.writeObject(wineManager.viewWineByName(partsCmd[1]));
-
 							break;
 						case "buy":
 							//TODO
@@ -169,9 +171,7 @@ public class myServer{
 							outStream.writeObject(user.getBalance());
 							break;
 						case "classify":
-
 							outStream.writeObject(wineManager.classifyWine(fileManager,partsCmd[1], Integer.parseInt(partsCmd[2])));
-
 							break;
 						case "talk":
 							//TODO
@@ -203,5 +203,8 @@ public class myServer{
 		userManager.addUser(user);
 		user.setBalance(200);
 		fileManager.writeContentToFile(new File(filesPath + usersPath), user.toString(), true);
+
+		File userFolder = new File(usersP + user.getId() + "/");
+		userFolder.mkdir();
 	}
 }
