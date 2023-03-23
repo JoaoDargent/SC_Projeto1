@@ -149,8 +149,13 @@ public class myServer{
 					switch (partsCmd[0]) {
 						case "add":
 							Wine wine = new Wine(partsCmd[1], partsCmd[2]);
-							wineManager.addWine(wine);
-							fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", "image.jpg");
+						
+							if(!wineManager.addWine(wine)) {
+								outStream.writeObject(false);
+							} else {
+								outStream.writeObject(true);
+								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", partsCmd[2]);
+							}							
 							break;
 						case "sell":
 							//TODO Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda

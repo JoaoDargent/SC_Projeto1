@@ -91,7 +91,12 @@ public class myClient {
                 String wine = scanner.next();
                 String image = scanner.next();
                 out.writeObject("add " + wine + " " + image);
-                fileManager.sendFile(out, "../", image);
+                boolean wasAdded = (boolean) in.readObject();
+                if(!wasAdded){
+                    System.out.println("O vinho indicado já existe.");
+                } else {
+                    fileManager.sendFile(out, "../", image);
+                }
                 break;
             case "s":
             case "sell":

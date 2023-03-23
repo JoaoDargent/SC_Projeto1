@@ -31,6 +31,8 @@ public class Wine {
 
     public String getName() {return name;}
 
+    public String getImage() {return image;}
+
     public float getStars() {return stars;}
 
     public int getValue() {

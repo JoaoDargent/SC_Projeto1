@@ -1,28 +1,38 @@
 package Library;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class WineManager {
 
     FileManager fileManager = new FileManager();
     public final static String winesFolder = "../files/serverFiles/Wines/";
+    private final static String wineDataFile = "../files/serverFiles/wineData.txt";
     private ArrayList<Wine> wines;
 
     public WineManager() {
         this.wines = new ArrayList<>();
+        loadData();
     }
 
-    public void addWine(Wine wine) throws IOException {
+    public boolean addWine(Wine wine) throws IOException {
         //Caso já exista um vinho com o mesmo nome, não é adicionado e é retornado false um erro
-        for (Wine w : wines){
+        /*for (Wine w : wines){
             if (w.getName().equals(wine.getName())){
                 return;
             }
+        }*/
+        if (checkIfWineExists(wine.getName())) {
+            System.out.println("O vinho indicado já existe.");
+            return false;
         }
         this.wines.add(wine);
 
@@ -37,6 +47,12 @@ public class WineManager {
         //Criar ficheiro de stock
         File stock = new File(path + "/stock.txt");
         stock.createNewFile();
+
+        // Adicionar o vinho aos dados persistentes
+        try (PrintWriter writer = new PrintWriter(new FileWriter(wineDataFile, true))) {
+            writer.println(wine.getName() + "," + wine.getImage());
+        }
+        return true;
     }
 
     public String viewWineByName(String name){
@@ -123,5 +139,20 @@ public class WineManager {
         File classifyFile = new File(winesFolder + "/" + wine + "/classify.txt");
         fileManager.writeContentToFile(classifyFile, stars + "", false);
         return "Classificação adicionada com sucesso";
+    }
+
+    private void loadData() {
+        try (Scanner scanner = new Scanner(new File(wineDataFile))) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] tokens = line.split(",");
+                if (tokens.length == 2) {
+                    Wine wine = new Wine(tokens[0], tokens[1]);
+                    wines.add(wine);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            // Ignore if the file does not exist yet
+        }
     }
 }
