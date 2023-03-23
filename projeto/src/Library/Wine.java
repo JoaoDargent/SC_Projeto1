@@ -1,7 +1,12 @@
 package Library;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Wine {
@@ -12,6 +17,7 @@ public class Wine {
 
     private int value;
     private float stars;
+    private String seller;
 
     public Wine(String name, String image) {
         this.name = name;
@@ -19,9 +25,26 @@ public class Wine {
         this.stock = new ArrayList<String>();
     }
 
-    public String view(){
+    public String view(String user){
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Nome: " + this.name + "\nClassificação: " + this.stars + "\nValor: " + getStockPrint());
+
+        Path source = Paths.get("../files/serverFiles/Wines/" + name + "/" + name + ".jpg");
+        Path destination = Paths.get("../files/clientFiles/" + user + "/" + name + ".jpg");
+
+        try {
+            Files.copy(source, destination);
+            System.out.println("File copied successfully!");
+        } catch (IOException e) {
+            if(Files.exists(destination)){
+                System.out.println(name + "'s image is already in files/clientFiles/" + user + "/");
+            } else {
+                System.out.println("Error copying file: " + e.getMessage());
+            }
+            
+        }
+
+        stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user 
+                                + "\nClassificação média: " + this.stars + "\n" + getStockPrint());
         return stringBuilder.toString();
     }
 
@@ -47,8 +70,6 @@ public class Wine {
         i++;
         File classifyFile = new File("../files/serverFiles/Wines/" + this.getName() + "/classify.txt");
         fileManager.writeContentToFile(classifyFile, "i:" + stars, false);
-
-
     }
 
     //stockprint
@@ -57,10 +78,13 @@ public class Wine {
         StringBuilder stringBuilder = new StringBuilder();
         for (String s : stock){
             String [] stockSplit = s.split(":");
-            stringBuilder.append("O utilizador " + stockSplit[0] + " está a vender a " + stockSplit[1] + "euros " + stockSplit[2] + " garrafas\n");
+            this.seller = stockSplit[0];
+            stringBuilder.append("O utilizador " + stockSplit[0] + " está a vender a " + stockSplit[1] + " euros " + stockSplit[2] + " garrafas\n");
         }
         return stringBuilder.toString();
     }
+
+    public String getSeller() {return this.seller;}
 
     public static void setStock(ArrayList<String> stk) {
        stock = stk;

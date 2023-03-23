@@ -158,15 +158,25 @@ public class myServer{
 							}							
 							break;
 						case "sell":
-							//TODO Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda
+							
 							//Caso o vinho nao exista e devolvido um erro
 							if (!wineManager.checkIfWineExists(partsCmd[1]))
-								outStream.writeObject("Não existe vinho com esse nome");
-							else
-								wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+								outStream.writeObject(false);
+							else {
+								//Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda
+								wine = new Wine(partsCmd[1], "");
+								System.out.println(wine.getSeller());
+								//se este user for o seller, entao só se altera a quantidade
+								if(wine.getSeller().equals(user.getId())){
+									wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+								} else {
+									outStream.writeObject(true);
+									wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+								}
+							}
 							break;
 						case "view":
-							outStream.writeObject(wineManager.viewWineByName(partsCmd[1]));
+							outStream.writeObject(wineManager.viewWineByName(partsCmd[1], user.getId()));
 							break;
 						case "buy":
 							//TODO

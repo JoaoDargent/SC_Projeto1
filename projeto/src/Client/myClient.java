@@ -100,7 +100,15 @@ public class myClient {
                 break;
             case "s":
             case "sell":
-
+                String wineS = scanner.next();
+                int value = Integer.parseInt(scanner.next());
+                int quantity = Integer.parseInt(scanner.next());
+                out.writeObject("sell " + wineS + " " + value + " " + quantity);
+                if (!(boolean) in.readObject()){ 
+                    System.out.println("Não existe vinho com esse nome.");
+                } else {
+                    System.out.println("Vinho colocado à venda com sucesso.");
+                }
                 break;
             case "v":
             case "view":
@@ -121,7 +129,17 @@ public class myClient {
                 break;
             case "c":
             case "classify":
-
+                String wineC = scanner.next();
+                String stars = scanner.next();
+                out.writeObject("classify " + wineC + " " + stars);
+                int result = (int) in.readObject();
+                if(result == -1){
+                    System.out.println("O vinho não existe");
+                } else if(result == 0){
+                    System.out.println("A classificação tem de estar entre 1 e 5");
+                } else {
+                    System.out.println("Classificação adicionada com sucesso");
+                }
                 break;
             case "t":
             case "talk":
