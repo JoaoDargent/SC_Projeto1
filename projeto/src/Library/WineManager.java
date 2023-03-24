@@ -145,21 +145,21 @@ public class WineManager {
         return false;
     }
 
-    public int classifyWine(FileManager fm, String wine, int stars) {
+    public String classifyWine(FileManager fm, String wine, int stars) {
         //Check if wine exists
         if (!checkIfWineExists(wine)){
-            return -1;
+            return "Vinho não existe.";
         }
         //Check if rating is between 1 and 5
         if (stars < 1 || stars > 5){
-            return 0;
+            return "A classificação tem que ser entre 1 e 5.";
         }
         //Classify wine
         Wine wineToClassify = getWineByName(wine);
         wineToClassify.setStars(fm,stars);
         File classifyFile = new File(winesFolder + "/" + wine + "/classify.txt");
         fm.writeContentToFile(classifyFile, stars + "", false);
-        return 1;
+        return "Vinho classificado com sucesso!";
     }
 
     private void loadData() {

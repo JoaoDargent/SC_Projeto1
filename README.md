@@ -18,7 +18,6 @@ Sendo que serverAddress tem o seguinte tipo: <IP/hostname>[:Port]
 
 Password não obrigatória neste passo
 
-
 ## Funcionalidades atuais
 
 Programa cria user e regista-o mas caso o servidor seja finalizado não faz "reload" dos users, ou seja:
@@ -27,9 +26,6 @@ O user "a" com a password "a" pode finalizar o client e reiniciar que continua a
 
 Funcionalidade wallet implementada
 
+## Limitações
 
-
-
-
-
-
+O comando "view" não funciona na totalidade, sendo que a imagem não é transferida corretamente.

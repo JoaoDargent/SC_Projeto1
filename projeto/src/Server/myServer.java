@@ -153,7 +153,7 @@ public class myServer{
 							} else {
 								outStream.writeObject(true);
 								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", wine.getName()+".jpg");
-							}							
+							}					
 							break;
 						case "sell":
 							//Caso o vinho nao exista e devolvido um erro
@@ -163,10 +163,14 @@ public class myServer{
 							break;
 						case "view":
 							outStream.writeObject(wineManager.viewWineByName(partsCmd[1], user.getId()));
-							fileManager.sendFile(outStream,filesPath + "Wines/" + partsCmd[1] + "/", partsCmd[1] + ".jpg");
+							if(wineManager.checkIfWineExists(partsCmd[1])){
+								outStream.writeObject(true);
+								fileManager.sendFile(outStream,filesPath + "Wines/" + partsCmd[1] + "/", partsCmd[1] + ".jpg");
+							} else {
+								outStream.writeObject(false);
+							}
 							break;
 						case "buy":
-							//TODO
 							outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2],user.getId(), Integer.parseInt(partsCmd[3])));
 							break;
 						case "wallet":
@@ -176,10 +180,8 @@ public class myServer{
 							outStream.writeObject(wineManager.classifyWine(fileManager,partsCmd[1], Integer.parseInt(partsCmd[2])));
 							break;
 						case "talk":
-							//TODO
-
+						    
 							outStream.writeObject(messageManager.talk(fileManager, userManager, user, partsCmd[1], partsCmd[2]));
-
 							break;
 						case "read":
 							outStream.writeObject(messageManager.read(fileManager, user));

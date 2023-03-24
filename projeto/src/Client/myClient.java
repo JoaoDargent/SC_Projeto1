@@ -110,7 +110,9 @@ public class myClient {
                 out.writeObject("view " + wineV);
                 String view = (String) in.readObject();
                 System.out.println(view);
-                fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/", wineV + ".jpg");
+                boolean exists = (boolean) in.readObject();
+                if(exists)
+                    fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/", wineV + ".jpg");
                 //Limitação do cliente: fica pendurado após receber o ficheiro
                 break;
             case "b":
@@ -133,14 +135,8 @@ public class myClient {
                 String wineC = scanner.next();
                 String stars = scanner.next();
                 out.writeObject("classify " + wineC + " " + stars);
-                int result = (int) in.readObject();
-                if(result == -1){
-                    System.out.println("O vinho não existe");
-                } else if(result == 0){
-                    System.out.println("A classificação tem de estar entre 1 e 5");
-                } else {
-                    System.out.println("Classificação adicionada com sucesso");
-                }
+                String classify  = (String) in.readObject();
+                System.out.println(classify);
                 break;
             case "t":
             case "talk":
