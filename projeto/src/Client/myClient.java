@@ -4,9 +4,6 @@ import Library.FileManager;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class myClient {
@@ -40,6 +37,7 @@ public class myClient {
         }
 
         String clientUser = fromUser.split(" ")[2] + ":" + fromUser.split(" ")[3];
+        String clientId = fromUser.split(" ")[2];
         String serverAddress = fromUser.split(" ")[1];
 
 
@@ -60,13 +58,13 @@ public class myClient {
         if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, clientUser);
+                recebeComandos(cSocket, scanner, in, out, clientId);
             }
         } else if (respostaCredenciais.equals("Registado com sucesso")) {
             System.out.println(respostaCredenciais);
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, clientUser);
+                recebeComandos(cSocket, scanner, in, out, clientId);
             }
 
         } else if (respostaCredenciais.equals("Password errada")) {
@@ -80,7 +78,7 @@ public class myClient {
         }
     }
 
-    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientUser) throws IOException, ClassNotFoundException {
+    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException {
         String comando = scanner.next();
         String[] comandoSplit = comando.split(" ");
 
@@ -104,11 +102,7 @@ public class myClient {
                 int value = Integer.parseInt(scanner.next());
                 int quantity = Integer.parseInt(scanner.next());
                 out.writeObject("sell " + wineS + " " + value + " " + quantity);
-                if (!(boolean) in.readObject()){ 
-                    System.out.println("Não existe vinho com esse nome.");
-                } else {
-                    System.out.println("Vinho colocado à venda com sucesso.");
-                }
+                System.out.println(in.readObject());
                 break;
             case "v":
             case "view":
@@ -116,10 +110,17 @@ public class myClient {
                 out.writeObject("view " + wineV);
                 String view = (String) in.readObject();
                 System.out.println(view);
+                fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/", wineV + ".jpg");
+                //Limitação do cliente: fica pendurado após receber o ficheiro
                 break;
             case "b":
             case "buy":
-
+                String wineB = scanner.next();
+                String seller = scanner.next();
+                int quantityB = Integer.parseInt(scanner.next());
+                out.writeObject("buy " + wineB + " " + seller + " " + quantityB);
+                String resposta = (String) in.readObject();
+                System.out.println(resposta);
                 break;
             case "w":
             case "wallet":

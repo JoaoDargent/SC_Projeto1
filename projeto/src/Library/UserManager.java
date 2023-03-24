@@ -24,6 +24,7 @@ public class UserManager {
                 }
             }
         }
+
         return "Registado com sucesso";
     }
     public User getUserById(String id){

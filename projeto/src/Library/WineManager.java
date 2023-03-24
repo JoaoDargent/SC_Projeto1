@@ -24,12 +24,6 @@ public class WineManager {
     }
 
     public boolean addWine(Wine wine) throws IOException {
-        //Caso já exista um vinho com o mesmo nome, não é adicionado e é retornado false um erro
-        /*for (Wine w : wines){
-            if (w.getName().equals(wine.getName())){
-                return;
-            }
-        }*/
         if (checkIfWineExists(wine.getName())) {
             System.out.println("O vinho indicado já existe.");
             return false;
@@ -67,7 +61,8 @@ public class WineManager {
     //add to stock
 
     public String addWineToStock(FileManager fm, User seller, String name, int value, int quantity){
-        ArrayList<String> stock = Wine.getStock();
+        Wine wine = getWineByName(name);
+        ArrayList<String> stock = wine.getStock();
         for (String s : stock){
             String [] stockSplit = s.split(":");
             if (stockSplit[0].equals(seller.getId())){
@@ -85,25 +80,40 @@ public class WineManager {
 
     //Caso não existam unidades suficientes, ou o comprador não tenha
     //saldo suficiente, deverá ser devolvido e assinalado o erro correspondente.
-    public String buyWine(UserManager um, String wine, String user, int quantity){
+    public String buyWine(UserManager um, String wine, String userSeller, String userBuyer, int quantity){
+        Wine wineObj = getWineByName(wine);
         //verificar se existe o vinho
         if (!checkIfWineExists(wine)){
             return "O vinho não existe";
         }
-        //verificar se existe o utilizador
-        if (!um.checkIfUserExists(user)){
+        //verificar se existe o utilizador seller
+        if (!um.checkIfUserExists(userSeller)){
             return "O utilizador não existe";
         }
+
+        //verifica se o seller tem o vinho no stock
+        if (!checkIfSellerExists(wineObj, userSeller)){
+            return "Esse utilizador não tem o vinho à venda no stock";
+        }
         //verificar se o utilizador tem saldo suficiente
-        if (um.getUserById(user).getBalance() < getWineByName(wine).getValue()){
+        if (um.getUserById(userBuyer).getBalance() < getWineByName(wine).getValue(userSeller)){
             return "O utilizador não tem saldo suficiente";
         }
 
-    return null;
+        //verificar se o seller tem unidades suficientes
+        if (getWineByName(wine).getQuantity(userSeller) < quantity){
+            return "O utilizador não tem unidades suficientes";
+        }
+
+        // efetuar a compra
+        //atualiza balance do comprador e do vendedor
+        um.getUserById(userBuyer).setBalance((um.getUserById(userBuyer).getBalance() - getWineByName(wine).getValue(userSeller))*quantity);
+        um.getUserById(userSeller).setBalance((um.getUserById(userSeller).getBalance() + getWineByName(wine).getValue(userSeller))*quantity);
+
+        //atualiza stock do vendedor
+        getWineByName(wine).setQuantity(fileManager, userSeller, getWineByName(wine).getQuantity(userSeller) - quantity);
+        return "Compra efetuada com sucesso";
     }
-
-    //getwinebyname
-
     public Wine getWineByName(String name){
         for (Wine w : wines){
             if (w.getName().equals(name)){
@@ -118,6 +128,17 @@ public class WineManager {
     public boolean checkIfWineExists(String name){
         for (Wine w : wines){
             if (w.getName().equals(name)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkIfSellerExists(Wine wine,String seller){
+        ArrayList<String> stock = wine.getStock();
+        for (String s : stock){
+            String [] stockSplit = s.split(":");
+            if (stockSplit[0].equals(seller)){
                 return true;
             }
         }

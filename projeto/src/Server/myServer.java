@@ -54,11 +54,7 @@ public class myServer{
 
 		//File usersTxt = new File(usersPath);
 
-/*
-		TODO load users from file to memory (if file exists)
-		if (usersTxt.exists()){
-			onLoad(fileManager, userManager);
-		}*/
+		//TODO load users from file to memory (if file exists)
 
 		while(true) {
 			try {
@@ -146,6 +142,7 @@ public class myServer{
 					String comando = inStream.readObject().toString();
 					String[] partsCmd = comando.split(" ");
 
+
 					switch (partsCmd[0]) {
 						case "add":
 							Wine wine = new Wine(partsCmd[1], partsCmd[2]);
@@ -154,33 +151,22 @@ public class myServer{
 								outStream.writeObject(false);
 							} else {
 								outStream.writeObject(true);
-								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", partsCmd[2]);
+								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", wine.getName()+".jpg");
 							}							
 							break;
 						case "sell":
-							
 							//Caso o vinho nao exista e devolvido um erro
-							if (!wineManager.checkIfWineExists(partsCmd[1]))
-								outStream.writeObject(false);
-							else {
-								//Caso o user queira adicionar quantidade ao stock de um vinho que já tem à venda
-								wine = new Wine(partsCmd[1], "");
-								System.out.println(wine.getSeller());
-								//se este user for o seller, entao só se altera a quantidade
-								if(wine.getSeller().equals(user.getId())){
-									wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
-								} else {
-									outStream.writeObject(true);
-									wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
-								}
-							}
+							if (!wineManager.checkIfWineExists(partsCmd[1])) outStream.writeObject("O vinho nao existe");
+							String resposta = wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+							outStream.writeObject(resposta);
 							break;
 						case "view":
 							outStream.writeObject(wineManager.viewWineByName(partsCmd[1], user.getId()));
+							fileManager.sendFile(outStream,filesPath + "Wines/" + partsCmd[1] + "/", partsCmd[1] + ".jpg");
 							break;
 						case "buy":
 							//TODO
-							wineManager.buyWine(userManager, partsCmd[1], partsCmd[2], Integer.parseInt(partsCmd[3]));
+							outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2],user.getId(), Integer.parseInt(partsCmd[3])));
 							break;
 						case "wallet":
 							outStream.writeObject(user.getBalance());

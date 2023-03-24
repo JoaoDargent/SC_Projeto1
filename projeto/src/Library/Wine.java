@@ -2,16 +2,17 @@ package Library;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static Library.WineManager.winesFolder;
+
 public class Wine {
 
+
     private static ArrayList<String> stock;
+    //seller:price:quantity
     private final String name;
     private final String image;
 
@@ -28,27 +29,20 @@ public class Wine {
     public String view(String user){
         StringBuilder stringBuilder = new StringBuilder();
 
-        Path source = Paths.get("../files/serverFiles/Wines/" + name + "/" + name + ".jpg");
-        Path destination = Paths.get("../files/clientFiles/" + user + "/" + name + ".jpg");
+        if (getStockPrint().equals("")) {
+            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user
+                                + "\nClassificação média: " + this.stars + "\n" + "Não existem vinhos a venda");
+        } else{
 
-        try {
-            Files.copy(source, destination);
-            System.out.println("File copied successfully!");
-        } catch (IOException e) {
-            if(Files.exists(destination)){
-                System.out.println(name + "'s image is already in files/clientFiles/" + user + "/");
-            } else {
-                System.out.println("Error copying file: " + e.getMessage());
-            }
-            
+            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user
+                    + "\nClassificação média: " + this.stars + "\n" + getStockPrint());
+
         }
 
-        stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user 
-                                + "\nClassificação média: " + this.stars + "\n" + getStockPrint());
         return stringBuilder.toString();
     }
 
-    public static ArrayList<String> getStock() {
+    public ArrayList<String> getStock() {
         return stock;
     }
 
@@ -58,24 +52,31 @@ public class Wine {
 
     public float getStars() {return stars;}
 
-    public int getValue() {
-        //TODO Vai buscar o valor mais baixo em stock?
-        return value;}
+    public int getValue(String seller) {
+        //seller:price:quantity
+        for (String s : stock){
+            String [] stockSplit = s.split(":");
+            if (stockSplit[0].equals(seller)){
+                return Integer.parseInt(stockSplit[1]);
+            }
+        }
+        return 0;
+    }
 
     public void setValue(int value) {this.value = value;}
 
+    private int i = 1;
     public void setStars(FileManager fileManager, float stars) {
-        int i = 1;
         this.stars += stars/i ;
         i++;
         File classifyFile = new File("../files/serverFiles/Wines/" + this.getName() + "/classify.txt");
         fileManager.writeContentToFile(classifyFile, "i:" + stars, false);
     }
 
-    //stockprint
-
     public String getStockPrint(){
         StringBuilder stringBuilder = new StringBuilder();
+        if (stock.isEmpty())
+            return "";
         for (String s : stock){
             String [] stockSplit = s.split(":");
             this.seller = stockSplit[0];
@@ -88,5 +89,51 @@ public class Wine {
 
     public static void setStock(ArrayList<String> stk) {
        stock = stk;
+    }
+
+    public int getQuantity(String userSeller) {
+        for (String s : stock){
+            String [] stockSplit = s.split(":");
+            if (stockSplit[0].equals(userSeller)){
+                return Integer.parseInt(stockSplit[2]);
+            }
+        }
+        return 0;
+    }
+
+    public void setQuantity(FileManager fileManager, String userSeller, int newQuantity) {
+        //Function has to change the arrayList stock and replace the line in stock.txt
+        //If the quantity is 0, the line has to be deleted
+
+        if (newQuantity == 0){
+            for (String s : stock){
+                String [] stockSplit = s.split(":");
+                if (stockSplit[0].equals(userSeller)){
+                    stock.remove(s);
+                }
+            }
+        }else{
+            for (String s : stock){
+                String [] stockSplit = s.split(":");
+                if (stockSplit[0].equals(userSeller)){
+                    stock.remove(s);
+                    stock.add(stockSplit[0] + ":" + stockSplit[1] + ":" + newQuantity);
+                }
+            }
+        }
+
+        File stockFile = new File (winesFolder + "/" + name + "/stock.txt");
+        //delete the content of the file stockFile
+
+        fileManager.writeContentToFile(stockFile, "", false);
+        for (String s : stock) {
+            fileManager.writeContentToFile(stockFile, s, true);
+        }
+
+
+
+
+
+
     }
 }

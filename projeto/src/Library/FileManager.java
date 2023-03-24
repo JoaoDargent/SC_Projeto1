@@ -56,7 +56,6 @@ public class FileManager {
      * Envia um ficheiro para o cliente
      * @param outStream - stream de saida para o cliente
      * @param path - caminho do ficheiro a enviar
-     * @param extensao - extensao do ficheiro a enviar
      * @throws IOException
      * @throws ClassNotFoundException
      */
