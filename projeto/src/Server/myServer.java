@@ -25,6 +25,7 @@ public class myServer{
 	private UserManager userManager = new UserManager();
 	private FileManager fileManager = new FileManager();
 	private WineManager wineManager = new WineManager();
+	private MessageManager messageManager = new MessageManager();
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("servidor: main");
@@ -176,9 +177,12 @@ public class myServer{
 							break;
 						case "talk":
 							//TODO
+
+							outStream.writeObject(messageManager.talk(fileManager, userManager, user, partsCmd[1], partsCmd[2]));
+
 							break;
 						case "read":
-							//TODO
+							outStream.writeObject(messageManager.read(fileManager, user));
 							break;
 						case "exit":
 							inStream.close();

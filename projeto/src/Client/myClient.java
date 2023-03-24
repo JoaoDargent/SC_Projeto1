@@ -144,11 +144,15 @@ public class myClient {
                 break;
             case "t":
             case "talk":
-
+                String user = scanner.next();
+                String message = scanner.next();
+                out.writeObject("talk " + user + " " + message);
                 break;
             case "r":
             case "read":
-
+                out.writeObject("read");
+                String read = (String) in.readObject();
+                System.out.println(read);
                 break;
             case "l":
             case "L":
