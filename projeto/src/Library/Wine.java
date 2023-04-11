@@ -2,8 +2,7 @@ package Library;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import static Library.WineManager.winesFolder;
@@ -24,9 +23,10 @@ public class Wine {
         this.name = name;
         this.image = image;
         this.stock = new ArrayList<String>();
+        this.stars = 0;
     }
 
-    public String view(String user){
+    public String view(String user) throws ClassNotFoundException, IOException{
         StringBuilder stringBuilder = new StringBuilder();
 
         if (getStockPrint().equals("")) {
@@ -57,7 +57,8 @@ public class Wine {
         for (String s : stock){
             String [] stockSplit = s.split(":");
             if (stockSplit[0].equals(seller)){
-                return Integer.parseInt(stockSplit[1]);
+                //valor por garrafa
+                return Integer.parseInt(stockSplit[1])/Integer.parseInt(stockSplit[2]);
             }
         }
         return 0;
@@ -66,11 +67,19 @@ public class Wine {
     public void setValue(int value) {this.value = value;}
 
     private int i = 1;
-    public void setStars(FileManager fileManager, float stars) {
-        this.stars += stars/i ;
+    //private double averageStars = 0.0;
+    public void setStars(FileManager fileManager, int stars) {
+        this.stars = (this.stars * (i - 1) + stars) / i;
         i++;
         File classifyFile = new File("../files/serverFiles/Wines/" + this.getName() + "/classify.txt");
         fileManager.writeContentToFile(classifyFile, "i:" + stars, false);
+    }
+
+    public void setStarsLoad(FileManager fileManager, ArrayList<String> stars) {
+            //for each element in stars do setStars
+            for (String s : stars){
+                setStars(fileManager, (int) Float.parseFloat(s));
+            }
     }
 
     public String getStockPrint(){
@@ -87,7 +96,7 @@ public class Wine {
 
     public String getSeller() {return this.seller;}
 
-    public static void setStock(ArrayList<String> stk) {
+    public void setStock(ArrayList<String> stk) {
        stock = stk;
     }
 
@@ -129,11 +138,6 @@ public class Wine {
         for (String s : stock) {
             fileManager.writeContentToFile(stockFile, s, true);
         }
-
-
-
-
-
 
     }
 }

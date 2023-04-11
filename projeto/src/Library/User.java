@@ -1,10 +1,8 @@
 package Library;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+
+import static Server.myServer.filesPath;
 
 public class User {
     private String id;
@@ -27,13 +25,12 @@ public class User {
     }
 
     public int getBalance() {
-        loadBalance();
         return balance;
     }
 
-    public void setBalance(int balance) {
+    public void setBalance(FileManager fileManager, int balance) throws IOException {
         this.balance = balance;
-        saveBalance();
+        saveBalance(fileManager);
     }
 
     @Override
@@ -41,23 +38,30 @@ public class User {
         return id + ":" + password;
     }
 
-    private void saveBalance() {
-        try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("user_" + id + ".dat"));
-            oos.writeInt(balance);
-            oos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void saveBalance(FileManager fileManager) throws IOException {
+        File balanceFile = new File (filesPath + "/Users/" + id + "/balance.txt");
+        if (!balanceFile.getParentFile().exists()){
+            balanceFile.getParentFile().mkdirs();
+            balanceFile.createNewFile();
+        }else if (!balanceFile.exists()){
+            balanceFile.createNewFile();
         }
+
+        fileManager.writeContentToFile(balanceFile, Integer.toString(balance),false);
     }
 
-    public void loadBalance() {
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream("user_" + id + ".dat"));
-            balance = ois.readInt();
-            ois.close();
-        } catch (IOException e) {
-            // If there's no file for this user, ignore the error
+    public void loadBalance(FileManager fileManager) throws IOException {
+        File balanceFile = new File (filesPath + "/Users/" + id + "/balance.txt");
+        //check if file exists
+        if (!balanceFile.exists()){
+          setBalance(fileManager,200);
         }
+        String filebalance = fileManager.readContentFromFile(balanceFile);
+        if (filebalance.equals("")){
+            setBalance(fileManager,200);
+        }
+        else setBalance(fileManager,Integer.parseInt(filebalance));
+
+
     }
 }

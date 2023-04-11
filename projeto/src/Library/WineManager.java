@@ -29,17 +29,19 @@ public class WineManager {
             return false;
         }
         this.wines.add(wine);
-
-        //Criar folder do vinho
+        
         Path path = Paths.get(winesFolder + wine.getName());
-        Files.createDirectories(path);
-
+        File wineFile =  new File(winesFolder + wine.getName());
+        if (!wineFile.exists()){
+            Files.createDirectories(path);
+        }
+        
         //Criar ficheiro de classificação
-        File classify = new File(path + "/classify.txt");
+        File classify = new File(winesFolder + wine.getName() +  "/classify.txt");
         classify.createNewFile();
 
         //Criar ficheiro de stock
-        File stock = new File(path + "/stock.txt");
+        File stock = new File(winesFolder + wine.getName() + "/stock.txt");
         stock.createNewFile();
 
         // Adicionar o vinho aos dados persistentes
@@ -49,7 +51,7 @@ public class WineManager {
         return true;
     }
 
-    public String viewWineByName(String name, String user){
+    public String viewWineByName(String name, String user) throws ClassNotFoundException, IOException{
         for (Wine w : wines){
             if (w.getName().equals(name)){
                 return w.view(user);
@@ -70,7 +72,7 @@ public class WineManager {
             }
         }
         stock.add(seller.getId() + ":" + value + ":" + quantity);
-        Wine.setStock(stock);
+        wine.setStock(stock);
         File stockFile = new File (winesFolder + "/" + name + "/stock.txt");
         fm.writeContentToFile(stockFile, seller.getId() + ":" + value + ":" + quantity, true);
         return "Vinho adicionado ao stock com sucesso";
@@ -80,7 +82,7 @@ public class WineManager {
 
     //Caso não existam unidades suficientes, ou o comprador não tenha
     //saldo suficiente, deverá ser devolvido e assinalado o erro correspondente.
-    public String buyWine(UserManager um, String wine, String userSeller, String userBuyer, int quantity){
+    public String buyWine(UserManager um, String wine, String userSeller, String userBuyer, int quantity) throws IOException {
         Wine wineObj = getWineByName(wine);
         //verificar se existe o vinho
         if (!checkIfWineExists(wine)){
@@ -107,8 +109,8 @@ public class WineManager {
 
         // efetuar a compra
         //atualiza balance do comprador e do vendedor
-        um.getUserById(userBuyer).setBalance((um.getUserById(userBuyer).getBalance() - getWineByName(wine).getValue(userSeller))*quantity);
-        um.getUserById(userSeller).setBalance((um.getUserById(userSeller).getBalance() + getWineByName(wine).getValue(userSeller))*quantity);
+        um.getUserById(userBuyer).setBalance(fileManager,um.getUserById(userBuyer).getBalance() - (getWineByName(wine).getValue(userSeller)*quantity));
+        um.getUserById(userSeller).setBalance(fileManager,um.getUserById(userSeller).getBalance() + (getWineByName(wine).getValue(userSeller)*quantity));
 
         //atualiza stock do vendedor
         getWineByName(wine).setQuantity(fileManager, userSeller, getWineByName(wine).getQuantity(userSeller) - quantity);
@@ -158,7 +160,7 @@ public class WineManager {
         Wine wineToClassify = getWineByName(wine);
         wineToClassify.setStars(fm,stars);
         File classifyFile = new File(winesFolder + "/" + wine + "/classify.txt");
-        fm.writeContentToFile(classifyFile, stars + "", false);
+        fm.writeContentToFile(classifyFile, stars + "", true);
         return "Vinho classificado com sucesso!";
     }
 

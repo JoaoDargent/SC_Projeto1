@@ -25,10 +25,8 @@ public class MessageManager {
             if (!file.getParentFile().exists()){
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-            }else{
-                if (!file.exists()){
+            }else if (!file.exists()){
                     file.createNewFile();
-                }
             }
 
             fm.writeContentToFile(file, sender.getId() + " : " + message ,true);

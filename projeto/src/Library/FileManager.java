@@ -1,8 +1,7 @@
 package Library;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+import java.nio.file.Files;
 
 public class FileManager {
 
@@ -62,17 +61,17 @@ public class FileManager {
     public void sendFile(ObjectOutputStream outStream, String path, String fileName) throws IOException, ClassNotFoundException {
         // Create a file object for the file to be sent
         File file = new File(path + fileName);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        
         // Create a byte array to hold the file data
-        byte[] fileBytes = new byte[(int) file.length()];
-        // Read the file data into the byte array
-        fileInputStream.read(fileBytes);
-        fileInputStream.close();
+        byte[] fileBytes = new byte[4096];
         
-        // Send the file data to the server
-        outStream.write(fileBytes);
-        outStream.flush();
+        // Wrap the output stream in a buffered output stream
+        BufferedOutputStream bos = new BufferedOutputStream(outStream);
+        // Send the file name and length
+        outStream.writeObject(fileName);
+        outStream.writeLong(fileBytes.length);
+        // Send the file data
+        bos.write(fileBytes, 0, fileBytes.length);
+        bos.flush();
     }
 
     /***
@@ -83,21 +82,29 @@ public class FileManager {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void receiveFile(ObjectInputStream inStream, String path, String fileName) throws IOException, ClassNotFoundException {
-        File file = new File(path);
-        // make sure the directory exists
-        if(!file.exists()) file.mkdirs();
+    public void receiveFile(ObjectInputStream inStream, String path/* , String fileName*/) throws IOException, ClassNotFoundException {
+        String fileName = (String) inStream.readObject();
+        long fileLength = inStream.readLong();
+        
         // Create a file output stream for the destination file
-        FileOutputStream fos = new FileOutputStream(new File(file, fileName));
+        FileOutputStream fos = new FileOutputStream(new File(path, fileName));
+        // Wrap the input stream in a buffered input stream
+        BufferedInputStream bis = new BufferedInputStream(inStream);
         
         // Create a byte array to hold the file data
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[4096];
         int bytesRead;
-        // Read the file data from the input stream and write it to the output stream
-        while ((bytesRead = inStream.read(buffer)) != -1) {
+        long totalBytesRead = 0;
+        
+        // Reads the file data from the input stream and writes it to the output stream 
+        // in chunks of 4096 bytes until the entire file has been received
+        while ((bytesRead = bis.read(buffer, 0, Math.min(buffer.length, (int) (fileLength - totalBytesRead)))) != -1) {
             fos.write(buffer, 0, bytesRead);
+            totalBytesRead += bytesRead;
+            if (totalBytesRead == fileLength) {
+                break;
+            }
         }
-
         fos.flush();
         fos.close();
     }

@@ -1,9 +1,10 @@
 package Server;
 
 /***************************************************************************
-*   Seguranca e Confiabilidade 2020/21
-*
-*
+*   Seguranca e Confiabilidade 2022/23
+*   Filipa Monteiro: 51015
+*   João Aguiar: 47120
+*   João Figueiredo: 53524
 ***************************************************************************/
 
 import Library.*;
@@ -14,8 +15,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Scanner;
-
 
 public class myServer{
 	public static final String filesPath = "../files/serverFiles/";
@@ -52,10 +53,7 @@ public class myServer{
 			System.out.println("TintolmarketServer Iniciado");
 		}
 
-
-		//File usersTxt = new File(usersPath);
-
-		//TODO load users from file to memory (if file exists)
+		onLoad();
 
 		while(true) {
 			try {
@@ -70,7 +68,6 @@ public class myServer{
 		}
 		//sSoc.close();
 	}
-
 
 	//Threads utilizadas para comunicacao com os clientes
 	class ServerThread extends Thread {
@@ -143,7 +140,6 @@ public class myServer{
 					String comando = inStream.readObject().toString();
 					String[] partsCmd = comando.split(" ");
 
-
 					switch (partsCmd[0]) {
 						case "add":
 							Wine wine = new Wine(partsCmd[1], partsCmd[2]);
@@ -152,7 +148,7 @@ public class myServer{
 								outStream.writeObject(false);
 							} else {
 								outStream.writeObject(true);
-								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/", wine.getName()+".jpg");
+								fileManager.receiveFile(inStream, filesPath + "Wines/" + wine.getName() + "/");
 							}					
 							break;
 						case "sell":
@@ -180,11 +176,14 @@ public class myServer{
 							outStream.writeObject(wineManager.classifyWine(fileManager,partsCmd[1], Integer.parseInt(partsCmd[2])));
 							break;
 						case "talk":
-						    
-							outStream.writeObject(messageManager.talk(fileManager, userManager, user, partsCmd[1], partsCmd[2]));
+							StringBuilder mensagem = new StringBuilder();
+							for(int i = 2; i < partsCmd.length; i++){
+								mensagem.append(partsCmd[i] + " ");
+							}
+							outStream.writeObject(messageManager.talk(fileManager, userManager, user, partsCmd[1], mensagem.toString()));
 							break;
 						case "read":
-							outStream.writeObject(messageManager.read(fileManager, user));
+								outStream.writeObject(messageManager.read(fileManager, user));
 							break;
 						case "exit":
 							inStream.close();
@@ -205,10 +204,54 @@ public class myServer{
 			}
 		}
 	}
+	private void onLoad() throws IOException {
+		File usersTXT = new File(filesPath+usersPath);
+		if(usersTXT.exists()){
+		String usersContent = fileManager.readContentFromFile(usersTXT);
+		String[] users = usersContent.split("\n");
+			for (String user : users){
+				if (!userManager.checkIfUserExists(user)){
+					String[] userSplitted = user.split(":");
+					User userTest = new User(userSplitted[0], userSplitted[1]);
+					userRegisterOnLoad(userTest);
+					userTest.loadBalance(fileManager);
+				}
+			}
+		}
 
-	private void userRegister(User user){
+		File winesFolders = new File(filesPath+"/Wines/");
+		//How to get a list of all folders in a directory
+		File[] wines = winesFolders.listFiles();
+		if (wines != null) {
+			for (File wine : wines) {
+				if(!wineManager.checkIfWineExists(wine.getName())){
+					File wineFolder = new File(filesPath + "/Wines/" + wine.getName());
+					Wine wineTest = new Wine(wine.getName(), wine.getName() + ".jpg");
+					wineManager.addWine(wineTest);
+
+					File stockTXT = new File(wineFolder + "/stock.txt");
+					fileManager.readContentFromFile(stockTXT);
+					String[] stock = fileManager.readContentFromFile(stockTXT).split("\n");
+					ArrayList<String> stockLoad = new ArrayList<>();
+					wineTest.setStock(stockLoad);
+
+					File classifyTXT = new File(wineFolder + "/classify.txt");
+					String[] classify = fileManager.readContentFromFile(classifyTXT).split("\n");
+					ArrayList<String> classifyLoad = new ArrayList<>();
+					wineTest.setStarsLoad(fileManager, classifyLoad);
+				}
+			}
+		}
+	}
+
+	private void userRegisterOnLoad(User userTest) throws IOException {
+		userManager.addUser(userTest);
+		userTest.setBalance(fileManager,200);
+	}
+
+	private void userRegister(User user) throws IOException {
 		userManager.addUser(user);
-		user.setBalance(200);
+		user.setBalance(fileManager,200);
 		fileManager.writeContentToFile(new File(filesPath + usersPath), user.toString(), true);
 
 		File userFolder = new File(usersP + user.getId() + "/");

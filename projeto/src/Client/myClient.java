@@ -52,7 +52,6 @@ public class myClient {
         ObjectOutputStream out = new ObjectOutputStream(cSocket.getOutputStream());
         out.writeObject(clientUser);
 
-
         String respostaCredenciais = String.valueOf(in.readObject());
 
         if (respostaCredenciais.equals("Autenticado com sucesso")) {
@@ -110,9 +109,9 @@ public class myClient {
                 out.writeObject("view " + wineV);
                 String view = (String) in.readObject();
                 System.out.println(view);
-                boolean exists = (boolean) in.readObject();
+                Boolean exists = (Boolean) in.readObject();
                 if(exists)
-                    fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/", wineV + ".jpg");
+                    fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/");
                 //Limitação do cliente: fica pendurado após receber o ficheiro
                 break;
             case "b":
@@ -140,9 +139,13 @@ public class myClient {
                 break;
             case "t":
             case "talk":
-                String user = scanner.next();
-                String message = scanner.next();
+                String comandoT = scanner.nextLine();
+                String user = comandoT.split(" ")[1];
+                //I want to slice comandoT from the 3rd element to the end
+                String message = comandoT.substring(comandoT.indexOf(" ", comandoT.indexOf(" ") + 1) + 1);
+
                 out.writeObject("talk " + user + " " + message);
+                System.out.println(in.readObject());
                 break;
             case "r":
             case "read":
