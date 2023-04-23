@@ -6,6 +6,12 @@ import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
+/**
+ * Seguranca e Confiabilidade 2022/23
+ * Filipa Monteiro: 51015
+ * João Aguiar: 47120
+ * João Figueiredo: 53524
+ */
 public class myClient {
 
     private static Socket cSocket;
@@ -26,7 +32,7 @@ public class myClient {
     private void startClient() throws IOException, ClassNotFoundException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Introduza os seguintes parâmetros");
-        System.out.println("Tintolmarket <serverAddress> <userID> [password]");
+        System.out.println("Tintolmarket <serverAddress> <truststore> <keystore> <password-keystore> <userID>");
         System.out.println("Note que serveraddress tem o seguinte formato: <IP/hostname>[:Port]. Caso não introduza a porta, será utilizada a 12345.");
 
         String fromUser = scanner.nextLine();
@@ -36,10 +42,11 @@ public class myClient {
             fromUser = fromUser + " " + scanner.nextLine();
         }
 
-        String clientUser = fromUser.split(" ")[2] + ":" + fromUser.split(" ")[3];
-        String clientId = fromUser.split(" ")[2];
         String serverAddress = fromUser.split(" ")[1];
-
+        String truststore = fromUser.split(" ")[2];
+        String keystore = fromUser.split(" ")[3];
+        String passwordKeystore = fromUser.split(" ")[4];
+        String userID = fromUser.split(" ")[5];
 
         if (serverAddress.contains(":")) {
             String[] serverAddressArr = serverAddress.split(":");
@@ -50,20 +57,20 @@ public class myClient {
 
         ObjectInputStream in = new ObjectInputStream(cSocket.getInputStream());
         ObjectOutputStream out = new ObjectOutputStream(cSocket.getOutputStream());
-        out.writeObject(clientUser);
+        out.writeObject(userID);
 
         String respostaCredenciais = String.valueOf(in.readObject());
 
         if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, clientId);
+                recebeComandos(cSocket, scanner, in, out, userID);
             }
         } else if (respostaCredenciais.equals("Registado com sucesso")) {
             System.out.println(respostaCredenciais);
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, clientId);
+                recebeComandos(cSocket, scanner, in, out, userID);
             }
 
         } else if (respostaCredenciais.equals("Password errada")) {

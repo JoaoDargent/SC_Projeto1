@@ -1,12 +1,5 @@
 package Server;
 
-/***************************************************************************
-*   Seguranca e Confiabilidade 2022/23
-*   Filipa Monteiro: 51015
-*   João Aguiar: 47120
-*   João Figueiredo: 53524
-***************************************************************************/
-
 import Library.*;
 
 import java.io.*;
@@ -18,6 +11,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+/**
+ * Seguranca e Confiabilidade 2022/23
+ * Filipa Monteiro: 51015
+ * João Aguiar: 47120
+ * João Figueiredo: 53524
+ */
 public class myServer{
 	public static final String filesPath = "../files/serverFiles/";
 	public static final String usersP = "../files/clientFiles/";
@@ -39,18 +41,24 @@ public class myServer{
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
 		System.out.println("Introduza os seguintes parâmetros");
-		System.out.println("TintolmarketServer <port>");
+		System.out.println("TintolmarketServer <port> <password-cifra> <keystore> <password-keystore>");
 		System.out.println("Caso omita port, será utilizado 12345.");
 		String fromUser = inFromUser.readLine();
 		String[] fromUserSplitted = fromUser.split(" ");
+		int port = Integer.parseInt(fromUserSplitted[1]);
+		String passwordCifra = fromUserSplitted[2];
+		String keystore = fromUserSplitted[3];
+		String keystorePassword = fromUserSplitted[4];
 
 		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
-		if (fromUserSplitted.length > 1){
-			sSoc = new ServerSocket(Integer.parseInt(fromUserSplitted[1])); //Inicia ss com a port passada como argumento
+		if (fromUserSplitted.length == 5){
+			sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
 			System.out.println("TintolmarketServer Iniciado");
-		}else{
+		}else if (fromUserSplitted.length == 4) {
 			sSoc = new ServerSocket(12345); //Inicia ss com a port 12345
 			System.out.println("TintolmarketServer Iniciado");
+		} else {
+			System.out.println("Parâmetros insuficientes");
 		}
 
 		onLoad();
