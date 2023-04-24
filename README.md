@@ -36,3 +36,11 @@ Read
 ## Limitações
 
 Os vinhos e saldo não estão a ser "reloaded" após reinicio do servidor
+
+## Keystores e truststores
+
+Keystore to servidor:
+    - alias: serverKS
+    - keystore: keystore.server
+    - keystore password: serverpw
+    - key password for "serverKS": serverpw

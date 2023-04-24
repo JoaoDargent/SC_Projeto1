@@ -8,6 +8,13 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -46,10 +53,46 @@ public class myServer{
 		String fromUser = inFromUser.readLine();
 		String[] fromUserSplitted = fromUser.split(" ");
 		int port = Integer.parseInt(fromUserSplitted[1]);
-		String passwordCifra = fromUserSplitted[2];
-		String keystore = fromUserSplitted[3];
-		String keystorePassword = fromUserSplitted[4];
 
+		// Chave simétrica
+		String passwordCifra = fromUserSplitted[2];
+		// Criar um objeto SecretKeySpec com a chave secreta
+		byte[] secretKey = passwordCifra.getBytes();
+		SecretKeySpec keySpec = new SecretKeySpec(secretKey, "AES");
+		
+		String ksName = fromUserSplitted[3];
+		String ksPwd = fromUserSplitted[4];
+		char[] keystorePassword = ksPwd.toCharArray();
+
+		// Cria um par de chaves
+		KeyPairGenerator keyPairGenerator;
+		KeyPair keyPair = null;
+		try {
+			keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(2048);
+			keyPair = keyPairGenerator.generateKeyPair();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		// Cria a KeyStore com o tipo JKS
+		KeyStore keyStore = null;
+		try {
+			keyStore = KeyStore.getInstance("JKS");
+			// Carrega a keystore vazia
+			keyStore.load(null, keystorePassword);
+			// Guarda a keystore num ficheiro com o nome fornecido pelo servidor
+			FileOutputStream fos = new FileOutputStream(ksName);
+			keyStore.store(fos, keystorePassword);
+			fos.close();
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+			e.printStackTrace();
+		}
+
+		System.setProperty("javax.net.ssl.keyStore", ksName);
+		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
+		System.setProperty("javax.net.ssl.keyStorePassword", ksPwd);
+		
 		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
 		if (fromUserSplitted.length == 5){
 			sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
