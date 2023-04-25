@@ -4,6 +4,17 @@ import Library.FileManager;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Enumeration;
 import java.util.Scanner;
 
 /**
@@ -16,8 +27,11 @@ public class myClient {
 
     private static Socket cSocket;
     private FileManager fileManager = new FileManager();
+    private static String truststorePwd = "truststorepw";
+    private static KeyStore kstore;
+    private static PrivateKey privateKey;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, SignatureException {
         System.out.println("Client");
         myClient client = new myClient();
         client.startClient();
@@ -29,7 +43,7 @@ public class myClient {
     //ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
 
 
-    private void startClient() throws IOException, ClassNotFoundException {
+    private void startClient() throws IOException, ClassNotFoundException, SignatureException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Introduza os seguintes parâmetros");
         System.out.println("Tintolmarket <serverAddress> <truststore> <keystore> <password-keystore> <userID>");
@@ -48,6 +62,29 @@ public class myClient {
         String passwordKeystore = fromUser.split(" ")[4];
         String userID = fromUser.split(" ")[5];
 
+        System.setProperty("javax.net.ssl.trustStore", "../" + truststore);
+
+        try {
+            FileInputStream kfile = new FileInputStream("../" + keystore);
+            kstore = KeyStore.getInstance("JCEKS");
+            kstore.load(kfile, passwordKeystore.toCharArray());
+
+            // Get the aliases in the keystore
+            Enumeration<String> aliases = kstore.aliases();
+            // Iterate through the aliases and find the correct one
+            String alias = null;
+            while (aliases.hasMoreElements()) {
+                String currentAlias = aliases.nextElement();
+                if (kstore.isKeyEntry(currentAlias)) {
+                    alias = currentAlias;
+                    break;
+                }
+            }
+            privateKey = (PrivateKey) kstore.getKey(alias, passwordKeystore.toCharArray());
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
+            e.printStackTrace();
+        }
+
         if (serverAddress.contains(":")) {
             String[] serverAddressArr = serverAddress.split(":");
             cSocket = new Socket(String.valueOf(serverAddressArr[0]), Integer.parseInt(serverAddressArr[1]));
@@ -58,10 +95,21 @@ public class myClient {
         ObjectInputStream in = new ObjectInputStream(cSocket.getInputStream());
         ObjectOutputStream out = new ObjectOutputStream(cSocket.getOutputStream());
         out.writeObject(userID);
+        long nonce = (long) in.readObject();
+		
+        Signature s;
+        try {
+            s = Signature.getInstance("MD5withRSA");
+            s.initSign(privateKey);
+            s.update(this.longToBytes(nonce));
+            //Assinar nonce e enviar nonce assinado
+            byte[] signedNonce = s.sign();
+            out.writeObject(signedNonce);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+        } 
 
-        String respostaCredenciais = String.valueOf(in.readObject());
-
-        if (respostaCredenciais.equals("Autenticado com sucesso")) {
+        /*if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, userID);
@@ -81,7 +129,13 @@ public class myClient {
             scanner.close();
             cSocket.close();
             System.exit(0);
-        }
+        }*/
+    }
+
+    private byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
     }
 
     private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException {

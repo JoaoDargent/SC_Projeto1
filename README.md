@@ -28,18 +28,29 @@ Cliente:
     - truststore password: "truststorepw"
     - alias: "clientsTS"
 
-    - keystore: "keystore.<clientsName>"
-    - keystore password: <client chooses>
-    - alias: "<clientsName>KS"
+    - keystore: "keystore.filipa"
+    - keystore password: filipapw
+    - alias: "filipaKS"
+    - key password for "filipaKS": "filipapw"
 
 Criar o par de chaves RSA do servidor e o seu certificado auto-assinado:
-    keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -keystore keystore.server
+    keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.server
 
 Exportar o certificado auto-assinado do servidor:
-    keytool -exportcert -alias serverKS -file certServer.cer -keystore keystore.server
+    keytool -exportcert -alias serverKS -file certServer.cer -storetype JCEKS -keystore keystore.server
 
 Criar a truststore para a aplicação cliente com o certificado do servidor:
-    keytool -import -alias clientsTS -file certServer.cer -keystore truststore.clients
+    keytool -import -alias serverKS -file certServer.cer -storetype JCEKS -keystore truststore.clients
+
+Criar o par de chaves RSA do cliente <filipa> e o seu certificado auto-assinado:
+    keytool -genkeypair -alias filipaKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.filipa
+
+Exportar o certificado auto-assinado do cliente <filipa>:
+    keytool -exportcert -alias filipaKS -file certFilipa.cer -storetype JCEKS -keystore keystore.filipa
+
+Importar certificado do cliente <filipa> para a truststore:
+    keytool -importcert -alias filipaKS -file certFilipa.cer -storetype JCEKS -keystore truststore.clients
+
 
 ## Funcionalidades atuais
 

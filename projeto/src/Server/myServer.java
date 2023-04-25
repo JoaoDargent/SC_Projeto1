@@ -5,14 +5,9 @@ import Library.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Seguranca e Confiabilidade 2022/23
@@ -102,9 +97,14 @@ public class myServer{
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
 
-				String credenciais = (String) inStream.readObject();
-				User user = new User(credenciais.split(":")[0], credenciais.split(":")[1]);
-				String login = user.getId() + ":" + user.getPassword();
+				String userName = (String) inStream.readObject();
+				System.out.println("Credenciais: " + userName);
+
+				//Servidor envia nonce ao cliente
+				long nonce = (new Random()).nextLong();
+        		outStream.writeObject(nonce);
+				User user = new User(userName);
+				//String login = user.getId() + ":" + user.getPassword();
 
 				File files = new File(filesPath);
 				if(!files.exists()) files.mkdirs();
@@ -124,13 +124,13 @@ public class myServer{
 
 					while(reader.hasNextLine()){
 						String account = reader.nextLine();
-						//utilizador existe
+						/*//utilizador existe
 						if(account.contains(login)){
 							contains = true;
 						//utilizador enviou uma das credenciais errada
 						} else if((account.contains(user.getId()) && !account.contains(user.getPassword()))) {
 							wrongLogin = true;
-						}
+						}*/
 					}
 					//se credenciais estão ok
 					if (contains){
@@ -231,7 +231,7 @@ public class myServer{
 			for (String user : users){
 				if (!userManager.checkIfUserExists(user)){
 					String[] userSplitted = user.split(":");
-					User userTest = new User(userSplitted[0], userSplitted[1]);
+					User userTest = new User(userSplitted[0]);
 					userRegisterOnLoad(userTest);
 					userTest.loadBalance(fileManager);
 				}

@@ -10,7 +10,7 @@ public class User {
 
     private int balance;
 
-    public User(String id, String password) {
+    public User(String id) {
         this.id = id;
         this.password = password;
     }
