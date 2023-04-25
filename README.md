@@ -16,6 +16,31 @@ Depois inicia-se o cliente:
 
 Sendo que serverAddress tem o seguinte tipo: <IP/hostname>[:Port]
 
+## Keystores e truststore
+Servidor:
+    - keystore: "keystore.server"
+    - keystore password: "serverpw"
+    - alias: "serverKS"
+    - key password for "serverKS": "serverpw"
+
+Cliente:
+    - truststore: "truststore.clients"
+    - truststore password: "truststorepw"
+    - alias: "clientsTS"
+
+    - keystore: "keystore.<clientsName>"
+    - keystore password: <client chooses>
+    - alias: "<clientsName>KS"
+
+Criar o par de chaves RSA do servidor e o seu certificado auto-assinado:
+    keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -keystore keystore.server
+
+Exportar o certificado auto-assinado do servidor:
+    keytool -exportcert -alias serverKS -file certServer.cer -keystore keystore.server
+
+Criar a truststore para a aplicação cliente com o certificado do servidor:
+    keytool -import -alias clientsTS -file certServer.cer -keystore truststore.clients
+
 ## Funcionalidades atuais
 
 Programa cria user e regista-o. Caso o servidor seja finalizado faz "reload" dos users, ou seja:

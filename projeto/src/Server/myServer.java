@@ -45,22 +45,33 @@ public class myServer{
 		System.out.println("Caso omita port, será utilizado 12345.");
 		String fromUser = inFromUser.readLine();
 		String[] fromUserSplitted = fromUser.split(" ");
-		int port = Integer.parseInt(fromUserSplitted[1]);
-		String passwordCifra = fromUserSplitted[2];
-		String keystore = fromUserSplitted[3];
-		String keystorePassword = fromUserSplitted[4];
+		int port = 0;
+		String passwordCifra;
+		String keystore = null;
+		String keystorePwd = null;
 
-		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
-		if (fromUserSplitted.length == 5){
-			sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
-			System.out.println("TintolmarketServer Iniciado");
-		}else if (fromUserSplitted.length == 4) {
-			sSoc = new ServerSocket(12345); //Inicia ss com a port 12345
-			System.out.println("TintolmarketServer Iniciado");
-		} else {
+		if(fromUserSplitted.length == 4){
+			port = 12345;
+			passwordCifra = fromUserSplitted[1];
+			keystore = fromUserSplitted[2];
+			keystorePwd = fromUserSplitted[3];
+		} else if (fromUserSplitted.length == 5){
+			port = Integer.parseInt(fromUserSplitted[1]);
+			passwordCifra = fromUserSplitted[2];
+			keystore = fromUserSplitted[3];
+			keystorePwd = fromUserSplitted[4];
+		} else if (fromUserSplitted.length < 4){
 			System.out.println("Parâmetros insuficientes");
 		}
 
+		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
+		sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
+		System.out.println("TintolmarketServer Iniciado");
+
+		System.setProperty("javax.net.ssl.keyStore", keystore);
+		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
+		System.setProperty("javax.net.ssl.keyStorePassword", keystorePwd);
+		
 		onLoad();
 
 		while(true) {
