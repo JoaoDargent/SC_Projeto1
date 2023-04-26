@@ -119,6 +119,7 @@ public class myServer{
 				//Servidor envia nonce ao cliente
 				long nonce = (new Random()).nextLong();
         		outStream.writeObject(nonce);
+				byte[] nonceAssinado = (byte[]) inStream.readObject();
 				User user = new User(userName);
 				//String login = user.getId() + ":" + user.getPassword();
 
