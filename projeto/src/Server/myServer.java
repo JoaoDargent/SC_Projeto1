@@ -65,13 +65,13 @@ public class myServer{
 		}
 
 		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
-		sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
+		//sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
 		System.out.println("TintolmarketServer Iniciado");
 
 		System.setProperty("javax.net.ssl.keyStore", keystore);
 		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
 		System.setProperty("javax.net.ssl.keyStorePassword", keystorePwd);
-		System.setProperty("jdk.tls.disabledAlgorithms", "SSLv3, RC4");
+		//System.setProperty("jdk.tls.disabledAlgorithms", "SSLv3, RC4");
 
 		onLoad();
 
@@ -97,13 +97,11 @@ public class myServer{
             System.err.println( "Erro ao criar server socket: " + a.getMessage() );
             System.exit( -1 );
         }
-
-		
 	}
 
 	//Threads utilizadas para comunicacao com os clientes
 	class ServerThread extends Thread {
-		private Socket socket = null;
+		private Socket socket;
 
 		ServerThread(Socket inSoc) {
 			socket = inSoc;

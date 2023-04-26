@@ -40,7 +40,7 @@ Exportar o certificado auto-assinado do servidor:
     keytool -exportcert -alias serverKS -file certServer.cer -storetype JCEKS -keystore keystore.server
 
 Criar a truststore para a aplicação cliente com o certificado do servidor:
-    keytool -import -alias serverKS -file certServer.cer -storetype JCEKS -keystore truststore.clients
+    keytool -import -alias serverKS -file certServer.cer -storetype JKS -keystore truststore.clients
 
 Criar o par de chaves RSA do cliente <filipa> e o seu certificado auto-assinado:
     keytool -genkeypair -alias filipaKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.filipa
@@ -49,7 +49,10 @@ Exportar o certificado auto-assinado do cliente <filipa>:
     keytool -exportcert -alias filipaKS -file certFilipa.cer -storetype JCEKS -keystore keystore.filipa
 
 Importar certificado do cliente <filipa> para a truststore:
-    keytool -importcert -alias filipaKS -file certFilipa.cer -storetype JCEKS -keystore truststore.clients
+    keytool -importcert -alias filipaKS -file certFilipa.cer -storetype JKS -keystore truststore.clients
+
+Ver o conteúdo da keystore do servidor:
+    keytool -list -storetype JCEKS -keystore keystore.server
 
 
 ## Funcionalidades atuais

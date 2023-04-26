@@ -29,7 +29,6 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class myClient {
 
-    private static SSLSocket cSocket;
     private FileManager fileManager = new FileManager();
     private static String truststorePwd = "truststorepw";
     private static KeyStore kstore;
@@ -66,10 +65,13 @@ public class myClient {
         String passwordKeystore = fromUser.split(" ")[4];
         String userID = fromUser.split(" ")[5];
 
-        System.setProperty("javax.net.ssl.trustStore", "../" + truststore);
+        System.setProperty("javax.net.ssl.trustStore", truststore);
+        System.setProperty("javax.net.ssl.keyStore", keystore);
+		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
+		System.setProperty("javax.net.ssl.keyStorePassword", passwordKeystore);
 
         try {
-            FileInputStream kfile = new FileInputStream("../" + keystore);
+            FileInputStream kfile = new FileInputStream(keystore);
             kstore = KeyStore.getInstance("JCEKS");
             kstore.load(kfile, passwordKeystore.toCharArray());
 
@@ -89,10 +91,10 @@ public class myClient {
             e.printStackTrace();
         }
 
-        SocketFactory sf = null;
+        SocketFactory sf = SSLSocketFactory.getDefault( );
+        SSLSocket cSocket;
         if (serverAddress.contains(":")) {
             String[] serverAddressArr = serverAddress.split(":");
-            sf = SSLSocketFactory.getDefault( );
             cSocket = (SSLSocket) sf.createSocket(String.valueOf(serverAddressArr[0]), Integer.parseInt(serverAddressArr[1]));
         } else {
             cSocket = (SSLSocket) sf.createSocket(serverAddress, 12345);
