@@ -9,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+
 /**
  * Seguranca e Confiabilidade 2022/23
  * Filipa Monteiro: 51015
@@ -66,21 +71,34 @@ public class myServer{
 		System.setProperty("javax.net.ssl.keyStore", keystore);
 		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
 		System.setProperty("javax.net.ssl.keyStorePassword", keystorePwd);
-		
+		System.setProperty("jdk.tls.disabledAlgorithms", "SSLv3, RC4");
+
 		onLoad();
 
-		while(true) {
-			try {
-				Socket inSoc = sSoc.accept();
-				ServerThread newServerThread = new ServerThread(inSoc);
-				newServerThread.start();
-		    }
-		    catch (IOException e) {
-		        e.printStackTrace();
-		    }
-		    
-		}
-		//sSoc.close();
+		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+		SSLServerSocket serverSocket;
+
+        try {
+         	serverSocket = (SSLServerSocket) ssf.createServerSocket(port);
+			
+			// Thread para cada cliente
+			while(true) {
+				try {
+					SSLSocket inSoc = (SSLSocket) serverSocket.accept();
+					ServerThread newServerThread = new ServerThread(inSoc);
+					newServerThread.start();
+				}
+				catch (IOException e) {
+					System.err.println("Erro ao aceitar conexao de um cliente:");
+					e.printStackTrace();
+				}
+			}
+        } catch (IOException a) {
+            System.err.println( "Erro ao criar server socket: " + a.getMessage() );
+            System.exit( -1 );
+        }
+
+		
 	}
 
 	//Threads utilizadas para comunicacao com os clientes

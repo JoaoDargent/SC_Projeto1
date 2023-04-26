@@ -17,6 +17,10 @@ import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.Scanner;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 /**
  * Seguranca e Confiabilidade 2022/23
  * Filipa Monteiro: 51015
@@ -25,7 +29,7 @@ import java.util.Scanner;
  */
 public class myClient {
 
-    private static Socket cSocket;
+    private static SSLSocket cSocket;
     private FileManager fileManager = new FileManager();
     private static String truststorePwd = "truststorepw";
     private static KeyStore kstore;
@@ -85,11 +89,13 @@ public class myClient {
             e.printStackTrace();
         }
 
+        SocketFactory sf = null;
         if (serverAddress.contains(":")) {
             String[] serverAddressArr = serverAddress.split(":");
-            cSocket = new Socket(String.valueOf(serverAddressArr[0]), Integer.parseInt(serverAddressArr[1]));
+            sf = SSLSocketFactory.getDefault( );
+            cSocket = (SSLSocket) sf.createSocket(String.valueOf(serverAddressArr[0]), Integer.parseInt(serverAddressArr[1]));
         } else {
-            cSocket = new Socket(serverAddress, 12345);
+            cSocket = (SSLSocket) sf.createSocket(serverAddress, 12345);
         }
 
         ObjectInputStream in = new ObjectInputStream(cSocket.getInputStream());
@@ -107,7 +113,7 @@ public class myClient {
             out.writeObject(signedNonce);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
-        } 
+        }
 
         /*if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
