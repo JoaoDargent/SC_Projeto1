@@ -80,8 +80,13 @@ public class myServer{
 
         try {
          	serverSocket = (SSLServerSocket) ssf.createServerSocket(port);
+
+
+
+
 			
-			// Thread para cada cliente
+
+			 // Thread para cada cliente
 			while(true) {
 				try {
 					SSLSocket inSoc = (SSLSocket) serverSocket.accept();
@@ -98,7 +103,6 @@ public class myServer{
             System.exit( -1 );
         }
 	}
-
 	//Threads utilizadas para comunicacao com os clientes
 	class ServerThread extends Thread {
 		private Socket socket;
@@ -113,16 +117,6 @@ public class myServer{
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
 
-				String userName = (String) inStream.readObject();
-				System.out.println("Credenciais: " + userName);
-
-				//Servidor envia nonce ao cliente
-				long nonce = (new Random()).nextLong();
-        		outStream.writeObject(nonce);
-				byte[] nonceAssinado = (byte[]) inStream.readObject();
-				User user = new User(userName);
-				//String login = user.getId() + ":" + user.getPassword();
-
 				File files = new File(filesPath);
 				if(!files.exists()) files.mkdirs();
 
@@ -130,6 +124,39 @@ public class myServer{
 				File usersPFolder = new File(usersP);
 				if(!usersFile.exists()) usersPFolder.mkdirs();
 
+				//Recebe o userID do cliente
+				String userId = (String) inStream.readObject();
+				System.out.println("User ID: " + userId);
+				//Servidor envia o nonce ao cliente
+				long nonce = new Random().nextLong();
+				outStream.writeObject(nonce);
+				//Verifica se esta registado
+				boolean isRegistered = userManager.checkIfUserExists(userId);
+				outStream.writeObject(isRegistered);
+
+
+				/*Se nao estiver registado, o cliente tem de:
+					Devolver o nonce enviado pelo servidor
+					Enviar o nonce cifrado com a chave privada do cliente
+					Enviar o certificado do cliente com a chave publica
+				 */
+				if(!isRegistered){
+					//Recebe o nonce do cliente
+					long nonceReturned = (long) inStream.readObject();
+					long nonceSigned = (long) inStream.readObject();
+					//Recebe o certificado do cliente
+					fileManager.receiveFile(inStream, filesPath + userId + "/.cer");
+					if (nonceReturned == nonce) {
+						//TODO: Decifrar o nonceSigned com a chave publica do cliente e verificar se e igual ao nonce
+
+					}else{
+						System.out.println("Erro: nonce diferente");
+					}
+				}
+
+
+
+				/*
 				Scanner reader;
 				BufferedWriter writer;
 			
@@ -139,16 +166,6 @@ public class myServer{
 					boolean contains = false;
 					boolean wrongLogin = false;
 
-					while(reader.hasNextLine()){
-						String account = reader.nextLine();
-						/*//utilizador existe
-						if(account.contains(login)){
-							contains = true;
-						//utilizador enviou uma das credenciais errada
-						} else if((account.contains(user.getId()) && !account.contains(user.getPassword()))) {
-							wrongLogin = true;
-						}*/
-					}
 					//se credenciais estão ok
 					if (contains){
 						outStream.writeObject("Autenticado com sucesso");
@@ -170,10 +187,10 @@ public class myServer{
 					usersFile.createNewFile();
 					userRegister(user);
 					outStream.writeObject("Registado com sucesso");
-				}
+				}*/
 
 				while(!socket.isClosed()){
-					String comando = inStream.readObject().toString();
+					String comando = (String) inStream.readObject();
 					String[] partsCmd = comando.split(" ");
 
 					switch (partsCmd[0]) {

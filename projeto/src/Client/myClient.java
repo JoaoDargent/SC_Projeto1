@@ -13,6 +13,7 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -33,6 +34,8 @@ public class myClient {
     private static String truststorePwd = "truststorepw";
     private static KeyStore kstore;
     private static PrivateKey privateKey;
+
+    private static Certificate userCertificate;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, SignatureException {
         System.out.println("Client");
@@ -66,6 +69,7 @@ public class myClient {
         String userID = fromUser.split(" ")[5];
 
         System.setProperty("javax.net.ssl.trustStore", truststore);
+        System.setProperty("javax.net.ssl.trustStorePassword", truststorePwd);
         System.setProperty("javax.net.ssl.keyStore", keystore);
 		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
 		System.setProperty("javax.net.ssl.keyStorePassword", passwordKeystore);
@@ -102,20 +106,48 @@ public class myClient {
 
         ObjectInputStream in = new ObjectInputStream(cSocket.getInputStream());
         ObjectOutputStream out = new ObjectOutputStream(cSocket.getOutputStream());
+        //Envia userID
         out.writeObject(userID);
+        //Recebe nonce
         long nonce = (long) in.readObject();
-		
+        //Verifica se esta registado
+        Boolean registered = (Boolean) in.readObject();
+
         Signature s;
+        byte[] signedNonce = null;
         try {
             s = Signature.getInstance("MD5withRSA");
             s.initSign(privateKey);
             s.update(this.longToBytes(nonce));
             //Assinar nonce e enviar nonce assinado
-            byte[] signedNonce = s.sign();
-            out.writeObject(signedNonce);
+            signedNonce = s.sign();
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
         }
+
+        if (registered) {
+            //Envia nonce assinado com chave privada
+            out.writeObject(signedNonce);
+            while (true) {
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
+                recebeComandos(cSocket, scanner, in, out, userID);
+            }
+        } else {
+            /*
+            Envia nonce original
+            Envia nonce assinado com chave privada
+            Envia certificado com chave publica
+             */
+            out.writeObject(nonce);
+            out.writeObject(signedNonce);
+            fileManager.sendFile( out, "cert"+ userID + ".cer", "cert" + userID + ".cer");
+            while (true) {
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
+                recebeComandos(cSocket, scanner, in, out, userID);
+            }
+
+        }
+
 
         /*if (respostaCredenciais.equals("Autenticado com sucesso")) {
             while (true) {
