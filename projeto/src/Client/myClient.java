@@ -255,14 +255,25 @@ public class myClient {
                 byte [] encryptedmsg = encryptionManager.encryptMsg(receiverPublicKey, message);
                 out.writeObject(encryptedmsg);
 
-
                 System.out.println(in.readObject());
                 break;
             case "r":
             case "read":
                 out.writeObject("read");
                 String read = (String) in.readObject();
-                System.out.println(read);
+                String[] lines = read.split("\n");
+                for (String line : lines) {
+                    int index = line.indexOf(":");
+                    if(index != -1){
+                        //imprime sender
+                        System.out.println(line.substring(0, index) + ":");
+                        //decifra mensagem cifrada
+                        byte[] mensagemCifrada = parseByteArray(line.substring(index + 1));
+                        String mensagem = encryptionManager.decryptMsg(privateKey, mensagemCifrada);
+                        System.out.println(mensagem);
+                    }
+                }
+                //System.out.println(read);
                 break;
             case "h":
             case "help":
@@ -295,5 +306,14 @@ public class myClient {
 
 
     }
+    private static byte[] parseByteArray(String s) {
+        String[] parts = s.substring(1, s.length() - 1).split(",");
+        byte[] result = new byte[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Byte.parseByte(parts[i].trim());
+        }
+        return result;
+    }
+
 
 }

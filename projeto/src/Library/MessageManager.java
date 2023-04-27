@@ -1,8 +1,6 @@
 package Library;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +9,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import java.security.cert.CertificateException;
+import java.util.Arrays;
+
 import static Server.myServer.filesPath;
 
 public class MessageManager {
@@ -27,11 +27,10 @@ public class MessageManager {
      * @throws InvalidKeyException
      */
 
-    public String talk(FileManager fm,UserManager um, User sender, String receiver, String message) throws IOException, CertificateException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    public String talk(FileManager fm,UserManager um, User sender, String receiver, byte[] encryptedMessage) throws IOException, CertificateException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         if (!um.checkIfUserExists(receiver)){
             return "Utilizador para quem pretende enviar nao existe";
-        }
-        else{
+        } else {
             User Ureceiver = um.getUserById(receiver);
         
             File file = new File(filesPath +"/Users/" + Ureceiver.getId() + "/messages.txt");
@@ -39,27 +38,23 @@ public class MessageManager {
             if (!file.getParentFile().exists()){
                 file.getParentFile().mkdirs();
                 file.createNewFile();
-            }else if (!file.exists()){
-                    file.createNewFile();
+            } else if (!file.exists()) {
+                file.createNewFile();
             }
 
-            fm.writeContentToFile(file, sender.getId() + " : " + message ,true);
+            fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
             return "Mensagem enviada com sucesso";
         }
     }
 
     public String read(FileManager fm, User reader) throws FileNotFoundException, KeyStoreException{
         File file = new File(filesPath +"/Users/" + reader.getId() + "/messages.txt");
-       
-
         String mensagem = fm.readContentFromFile(file);
-        
+
         if (mensagem.equals("")){
             return "Nao tem mensagens novas";
         }
         fm.writeContentToFile(file, "",false);
         return mensagem;
     }
-
-   
 }

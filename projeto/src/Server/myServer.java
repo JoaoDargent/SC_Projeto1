@@ -266,11 +266,9 @@ public class myServer{
 							outStream.writeObject(wineManager.classifyWine(fileManager,partsCmd[1], Integer.parseInt(partsCmd[2])));
 							break;
 						case "talk":
-							StringBuilder mensagem = new StringBuilder();
-							for(int i = 2; i < partsCmd.length; i++){
-								mensagem.append(partsCmd[i] + " ");
-							}
-							outStream.writeObject(messageManager.talk(fileManager, userManager, user, partsCmd[1], mensagem.toString()));
+							String receiver = partsCmd[2];
+							byte[] mensagem = (byte[]) inStream.readObject();
+							outStream.writeUTF(messageManager.talk(fileManager, userManager, user, receiver, mensagem));
 							break;
 						case "read":
 							outStream.writeObject(messageManager.read(fileManager, user));

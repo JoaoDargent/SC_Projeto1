@@ -140,7 +140,7 @@ public class EncryptionManager {
     }
 
     public byte[] encryptMsg(Key key, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException  {
-		Cipher c = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+		Cipher c = Cipher.getInstance("RSA");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		System.out.println(key);
 		byte[] msgBytes = msg.getBytes( );
@@ -148,7 +148,7 @@ public class EncryptionManager {
 	}
 
     public String decryptMsg(Key key, byte[] encryptedMsg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		Cipher c = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+		Cipher c = Cipher.getInstance("RSA");
 		c.init(Cipher.DECRYPT_MODE, key);
 		System.out.println(key);
 		byte[] msgBytes = c.doFinal(encryptedMsg);
