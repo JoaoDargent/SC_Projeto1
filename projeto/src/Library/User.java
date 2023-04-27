@@ -7,13 +7,13 @@ import static Server.myServer.filesPath;
 
 public class User {
     private String id;
-    private PublicKey password;
+    private String pathToPublicKey;
 
     private int balance;
 
-    public User(String id, PublicKey password) {
+    public User(String id, String pathToPublicKey) {
         this.id = id;
-        this.password = password;
+        this.pathToPublicKey = pathToPublicKey;
     }
 
 
@@ -21,10 +21,10 @@ public class User {
         return id;
     }
 
-    public PublicKey getPassword() {
-        return password;
-    }
 
+    public String getPathToPublicKey() {
+        return pathToPublicKey;
+    }
     public int getBalance() {
         return balance;
     }
@@ -36,7 +36,7 @@ public class User {
 
     @Override
     public String toString() {
-        return id + ":" + password;
+        return id + ":" + pathToPublicKey;
     }
 
     private void saveBalance(FileManager fileManager) throws IOException {

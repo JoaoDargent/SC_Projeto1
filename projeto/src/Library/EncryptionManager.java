@@ -1,15 +1,12 @@
 package Library;
 
-import java.io.File;
+import Server.myServer;
+
+import java.io.*;
 import java.nio.file.Files;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
-import java.security.Key;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -18,7 +15,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
-import java.security.PublicKey;
 import java.nio.ByteBuffer;
 
 public class EncryptionManager {
@@ -96,15 +92,51 @@ public class EncryptionManager {
         return new File(fileName + "_decif.txt");
     }
 
-    public Long decryptNonce (byte[] nonce, PublicKey chave ) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
-        // Decrypt the signed nonce
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.DECRYPT_MODE, chave);
-        byte[] decryptedNonce = cipher.doFinal(nonce);
-        // Convert bytes to long using ByteBuffer
-        ByteBuffer buffer = ByteBuffer.wrap(decryptedNonce);
-        long nonceDecrypted = buffer.getLong();
-        return nonceDecrypted;
+    public boolean checkSignedNonce (byte[] nonceAssinado, PublicKey chave, long nonceOriginal ) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, SignatureException {
+        Signature s = Signature.getInstance("MD5withRSA");
+        s.initVerify(chave);
+        s.update(longToBytes(nonceOriginal));
+        if (s.verify(nonceAssinado))
+            return true;
+        else
+            return false;
+    }
+
+    public byte[] longToBytes(long x) {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(x);
+        return buffer.array();
+    }
+
+    public byte[] encryptUsersTxt(SecretKey key) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Path path = Paths.get(myServer.filesPath + "users.txt");
+        byte[] fileContents = Files.readAllBytes(path);
+
+        Cipher c = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+        c.init(Cipher.ENCRYPT_MODE, key);
+
+        byte[] enc = c.doFinal(fileContents);
+        byte[] params = c.getParameters().getEncoded();
+
+        Path encryptedPath = Paths.get(myServer.filesPath + "users.cif");
+        Files.write(encryptedPath, enc);
+
+        File usersFile = new File(myServer.filesPath + "users.txt");
+        usersFile.delete();
+
+        return params;
+    }
+
+    public void decryptUsersTxt(SecretKey key, byte[] params) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException, IOException, IllegalBlockSizeException, BadPaddingException {
+        AlgorithmParameters p = AlgorithmParameters.getInstance("PBEWithHmacSHA256AndAES_128");
+        p.init(params);
+        Cipher d = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+        d.init(Cipher.DECRYPT_MODE, key, p);
+        byte [] dec = d.doFinal(Files.readAllBytes(Paths.get(myServer.filesPath + "users.cif")));
+
+        File usersFile = new File(myServer.filesPath + "users.txt");
+        usersFile.createNewFile();
+        Files.write(Paths.get(myServer.filesPath + "users.txt"), dec);
     }
 
 }

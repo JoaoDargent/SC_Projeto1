@@ -13,20 +13,7 @@ public class UserManager {
         this.users.add(user);
     }
 
-    public String loginManager(User user){
-        for (User u : users){
-            if (u.getId().equals(user.getId())){
-                if (u.getPassword().equals(user.getPassword())){
-                    return "Autenticado com sucesso";
-                }
-                else{
-                    return "Password errada";
-                }
-            }
-        }
 
-        return "Registado com sucesso";
-    }
     public User getUserById(String id){
         for (User u : users){
             if (u.getId().equals(id)){

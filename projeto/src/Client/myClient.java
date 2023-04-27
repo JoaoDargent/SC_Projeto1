@@ -5,14 +5,7 @@ import Library.FileManager;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
@@ -54,7 +47,8 @@ public class myClient {
         System.out.println("Tintolmarket <serverAddress> <truststore> <keystore> <password-keystore> <userID>");
         System.out.println("Note que serveraddress tem o seguinte formato: <IP/hostname>[:Port]. Caso não introduza a porta, será utilizada a 12345.");
 
-        String fromUser = scanner.nextLine();
+        //String fromUser = scanner.nextLine();
+        String fromUser = "Tintolmarket localhost truststore.clients keystore.filipa filipapw filipa";
         //If para caso nao seja passada a password
         if (fromUser.split(" ").length == 3) {
             System.out.println("Olá " + fromUser.split(" ")[2] + "! Por favor introduza a password: ");
@@ -70,8 +64,8 @@ public class myClient {
         System.setProperty("javax.net.ssl.trustStore", truststore);
         System.setProperty("javax.net.ssl.trustStorePassword", truststorePwd);
         System.setProperty("javax.net.ssl.keyStore", keystore);
-		System.setProperty("javax.net.ssl.keyStoreType", "JCEKS");
-		System.setProperty("javax.net.ssl.keyStorePassword", passwordKeystore);
+        System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
+        System.setProperty("javax.net.ssl.keyStorePassword", passwordKeystore);
 
         try {
             FileInputStream kfile = new FileInputStream(keystore);
@@ -145,36 +139,31 @@ public class myClient {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
             out.writeObject(cert);
-
-            while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, userID);
-            }
-
         }
 
 
-        /*if (respostaCredenciais.equals("Autenticado com sucesso")) {
+        //Recebe resposta do servidor
+        String respostaCredenciais = (String) in.readObject();
+        if (respostaCredenciais.equals("Verificacao feita com sucesso") && registered){
+            System.out.println("Verificacao feita com sucesso!");
             while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
                 recebeComandos(cSocket, scanner, in, out, userID);
             }
-        } else if (respostaCredenciais.equals("Registado com sucesso")) {
+        }else if (respostaCredenciais.equals("Verificacao feita com sucesso") && !registered) {
+            System.out.println("Registado com sucesso!");
+            while (true) {
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
+                recebeComandos(cSocket, scanner, in, out, userID);
+            }
+        }else {
             System.out.println(respostaCredenciais);
-            while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, userID);
-            }
-
-        } else if (respostaCredenciais.equals("Password errada")) {
-            System.out.println("Password errada.");
-            System.out.println("Programa vai terminar");
             out.close();
             in.close();
             scanner.close();
             cSocket.close();
             System.exit(0);
-        }*/
+        }
     }
 
     private byte[] longToBytes(long x) {
@@ -183,7 +172,7 @@ public class myClient {
         return buffer.array();
     }
 
-    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException {
+    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
         String comando = scanner.next();
         String[] comandoSplit = comando.split(" ");
 
@@ -250,7 +239,18 @@ public class myClient {
                 //I want to slice comandoT from the 3rd element to the end
                 String message = comandoT.substring(comandoT.indexOf(" ", comandoT.indexOf(" ") + 1) + 1);
 
-                out.writeObject("talk " + user + " " + message);
+                //out.writeObject("talk " + user + " " + message);
+                out.writeObject("talk " + clientId + " " + user);
+
+                // Load the keystore
+                KeyStore truststore = KeyStore.getInstance(KeyStore.getDefaultType());
+                Key receiverPublicKey =  truststore.getKey(user, truststorePwd.toCharArray());
+
+                // Encrypt message
+
+
+
+
                 System.out.println(in.readObject());
                 break;
             case "r":
@@ -259,8 +259,8 @@ public class myClient {
                 String read = (String) in.readObject();
                 System.out.println(read);
                 break;
-            case "l":
-            case "L":
+            case "h":
+            case "help":
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("A lista de comandos eh a seguinte:\n");
                 stringBuilder.append("add <wine> <image>\n");

@@ -2,6 +2,8 @@ package Library;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
 public class FileManager {
 
@@ -107,5 +109,17 @@ public class FileManager {
         }
         fos.flush();
         fos.close();
+    }
+
+    public void writeCertToFile(X509Certificate cert, String filePath) throws IOException {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            fos.write(cert.getEncoded());
+        } catch (CertificateEncodingException e) {
+            e.printStackTrace();
+        }
     }
 }
