@@ -139,4 +139,20 @@ public class EncryptionManager {
         Files.write(Paths.get(myServer.filesPath + "users.txt"), dec);
     }
 
+    public byte[] encryptMsg(Key key, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException  {
+		Cipher c = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+		c.init(Cipher.ENCRYPT_MODE, key);
+		System.out.println(key);
+		byte[] msgBytes = msg.getBytes( );
+		return c.doFinal(msgBytes);
+	}
+
+    public String decryptMsg(Key key, byte[] encryptedMsg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		Cipher c = Cipher.getInstance("PBEWithHmacSHA256AndAES_128");
+		c.init(Cipher.DECRYPT_MODE, key);
+		System.out.println(key);
+		byte[] msgBytes = c.doFinal(encryptedMsg);
+		return new String(msgBytes);
+	}
+
 }

@@ -1,5 +1,6 @@
 package Client;
 
+import Library.EncryptionManager;
 import Library.FileManager;
 
 import java.io.*;
@@ -12,6 +13,9 @@ import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.Scanner;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -25,6 +29,7 @@ import javax.net.ssl.SSLSocketFactory;
 public class myClient {
 
     private FileManager fileManager = new FileManager();
+    private EncryptionManager encryptionManager = new EncryptionManager();
     private static String truststorePwd = "truststorepw";
     private static KeyStore kstore;
     private static PrivateKey privateKey;
@@ -172,7 +177,7 @@ public class myClient {
         return buffer.array();
     }
 
-    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
         String comando = scanner.next();
         String[] comandoSplit = comando.split(" ");
 
@@ -247,8 +252,8 @@ public class myClient {
                 Key receiverPublicKey =  truststore.getKey(user, truststorePwd.toCharArray());
 
                 // Encrypt message
-
-
+                byte [] encryptedmsg = encryptionManager.encryptMsg(receiverPublicKey, message);
+                out.writeObject(encryptedmsg);
 
 
                 System.out.println(in.readObject());
