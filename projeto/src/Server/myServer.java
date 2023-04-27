@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -20,6 +21,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import java.security.cert.X509Certificate;
 
 /**
  * Seguranca e Confiabilidade 2022/23
@@ -36,6 +38,7 @@ public class myServer{
 	private FileManager fileManager = new FileManager();
 	private WineManager wineManager = new WineManager();
 	private MessageManager messageManager = new MessageManager();
+	private EncryptionManager encryptionManager = new EncryptionManager();
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("servidor: main");
@@ -80,7 +83,7 @@ public class myServer{
 		System.setProperty("javax.net.ssl.keyStorePassword", keystorePwd);
 		//System.setProperty("jdk.tls.disabledAlgorithms", "SSLv3, RC4");
 
-		onLoad();
+		//onLoad();
 
 		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 		SSLServerSocket serverSocket;
@@ -120,6 +123,7 @@ public class myServer{
 		}
  
 		public void run() {
+			User user = null;
 			try {
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
@@ -150,11 +154,16 @@ public class myServer{
 				if(!isRegistered){
 					//Recebe o nonce do cliente
 					long nonceReturned = (long) inStream.readObject();
-					long nonceSigned = (long) inStream.readObject();
+					byte[] nonceSigned = (byte[]) inStream.readObject();
 					//Recebe o certificado do cliente
-					fileManager.receiveFile(inStream, filesPath + userId + "/.cer");
+					X509Certificate userCert = (X509Certificate) inStream.readObject();
+					PublicKey chavePublica = userCert.getPublicKey();
+					//fileManager.receiveFile(inStream, filesPath + userId + "/.cer");
 					if (nonceReturned == nonce) {
-						//TODO: Decifrar o nonceSigned com a chave publica do cliente e verificar se e igual ao nonce
+						encryptionManager.decryptNonce(nonceSigned, chavePublica);
+						// TODO: Decifrar o nonceSigned com a chave publica do cliente e verificar se e igual ao nonce
+						user = new User(userId, chavePublica);
+						userRegister(user);
 
 					}else{
 						System.out.println("Erro: nonce diferente");
@@ -259,15 +268,23 @@ public class myServer{
 
 					socket.close();
 
-			} catch(IOException | ClassNotFoundException | CertificateException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException e){
+			} catch(IOException | ClassNotFoundException e ){
 				e.printStackTrace();
-			} catch (KeyStoreException e) {
+			} catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}   catch (NoSuchPaddingException e) {
+				e.printStackTrace();
+			} catch (IllegalBlockSizeException e) {
+				e.printStackTrace();
+			} catch (BadPaddingException e) {
+				e.printStackTrace();
+			} catch (KeyStoreException e) {
+				e.printStackTrace();
+			} 
 		}
 	}
-	private void onLoad() throws IOException {
+	/*private void onLoad() throws IOException {
 		File usersTXT = new File(filesPath+usersPath);
 		if(usersTXT.exists()){
 		String usersContent = fileManager.readContentFromFile(usersTXT);
@@ -305,7 +322,7 @@ public class myServer{
 				}
 			}
 		}
-	}
+	}*/
 
 	private void userRegisterOnLoad(User userTest) throws IOException {
 		userManager.addUser(userTest);

@@ -1,16 +1,17 @@
 package Library;
 
 import java.io.*;
+import java.security.PublicKey;
 
 import static Server.myServer.filesPath;
 
 public class User {
     private String id;
-    private String password;
+    private PublicKey password;
 
     private int balance;
 
-    public User(String id) {
+    public User(String id, PublicKey password) {
         this.id = id;
         this.password = password;
     }
@@ -20,7 +21,7 @@ public class User {
         return id;
     }
 
-    public String getPassword() {
+    public PublicKey getPassword() {
         return password;
     }
 

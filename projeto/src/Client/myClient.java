@@ -13,7 +13,8 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -35,9 +36,7 @@ public class myClient {
     private static KeyStore kstore;
     private static PrivateKey privateKey;
 
-    private static Certificate userCertificate;
-
-    public static void main(String[] args) throws IOException, ClassNotFoundException, SignatureException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, SignatureException, Exception {
         System.out.println("Client");
         myClient client = new myClient();
         client.startClient();
@@ -49,7 +48,7 @@ public class myClient {
     //ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
 
 
-    private void startClient() throws IOException, ClassNotFoundException, SignatureException {
+    private void startClient() throws IOException, ClassNotFoundException, SignatureException, Exception {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Introduza os seguintes parâmetros");
         System.out.println("Tintolmarket <serverAddress> <truststore> <keystore> <password-keystore> <userID>");
@@ -125,6 +124,7 @@ public class myClient {
             e.printStackTrace();
         }
 
+
         if (registered) {
             //Envia nonce assinado com chave privada
             out.writeObject(signedNonce);
@@ -140,7 +140,12 @@ public class myClient {
              */
             out.writeObject(nonce);
             out.writeObject(signedNonce);
-            fileManager.sendFile( out, "cert"+ userID + ".cer", "cert" + userID + ".cer");
+            
+            FileInputStream fis = new FileInputStream("../src/cert" + userID + ".cer");
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
+            out.writeObject(cert);
+
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
                 recebeComandos(cSocket, scanner, in, out, userID);

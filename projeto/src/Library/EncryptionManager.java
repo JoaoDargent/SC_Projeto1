@@ -7,11 +7,19 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.InvalidKeyException;
 import java.security.Key;
+
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.CipherInputStream;
 import javax.crypto.SecretKey;
+import java.security.PublicKey;
+import java.nio.ByteBuffer;
 
 public class EncryptionManager {
 
@@ -61,34 +69,15 @@ public class EncryptionManager {
     }
 
 
-    public static File decryptFile(File file) throws Exception {
+    public static File decryptFile(File file, Key key) throws Exception {
 
         String fileName = file.getName().replaceAll("\\.cif$", "");
-
-        //ler a chave cifrada do ficheiro
-        FileInputStream kis = new FileInputStream(fileName + ".key");
-        ObjectInputStream ois = new ObjectInputStream(kis);
-        byte[] wrappedKey = (byte[]) ois.readObject();
-        ois.close();
-
-        //obter a chave privada da keystore
-        FileInputStream kfile = new FileInputStream("mykeystore.jks"); // caminho para a keystore
-        KeyStore kstore = KeyStore.getInstance("JKS");
-        char[] password = "password".toCharArray(); // substitua "password" pela senha da keystore
-        kstore.load(kfile, password);
-
-        Key myPrivateKey = kstore.getKey("pardechaves", "password".toCharArray()); // substitua "pardechaves" pelo alias da chave privada na keystore
-
-        //decifrar a chave secreta key com a chave privada
-        Cipher c = Cipher.getInstance("RSA");
-        c.init(Cipher.UNWRAP_MODE, myPrivateKey);
-        SecretKey key = (SecretKey) c.unwrap(wrappedKey, "AES", Cipher.SECRET_KEY);
 
         //ler o ficheiro cifrado e decifrar com a chave secreta
         FileInputStream fis = new FileInputStream(fileName + ".cif");
         FileOutputStream fos = new FileOutputStream(fileName + "_decif.txt");
 
-        c = Cipher.getInstance("AES");
+        Cipher c = Cipher.getInstance("AES");
         c.init(Cipher.DECRYPT_MODE, key);
 
         CipherInputStream cis = new CipherInputStream(fis, c);
@@ -105,6 +94,17 @@ public class EncryptionManager {
 
         // return the decrypted file
         return new File(fileName + "_decif.txt");
+    }
+
+    public Long decryptNonce (byte[] nonce, PublicKey chave ) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+        // Decrypt the signed nonce
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, chave);
+        byte[] decryptedNonce = cipher.doFinal(nonce);
+        // Convert bytes to long using ByteBuffer
+        ByteBuffer buffer = ByteBuffer.wrap(decryptedNonce);
+        long nonceDecrypted = buffer.getLong();
+        return nonceDecrypted;
     }
 
 }

@@ -46,10 +46,10 @@ Criar o par de chaves RSA do cliente <filipa> e o seu certificado auto-assinado:
     keytool -genkeypair -alias filipaKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.filipa
 
 Exportar o certificado auto-assinado do cliente <filipa>:
-    keytool -exportcert -alias filipaKS -file certFilipa.cer -storetype JCEKS -keystore keystore.filipa
+    keytool -exportcert -alias filipaKS -file certfilipa.cer -storetype JCEKS -keystore keystore.filipa
 
 Importar certificado do cliente <filipa> para a truststore:
-    keytool -importcert -alias filipaKS -file certFilipa.cer -storetype JKS -keystore truststore.clients
+    keytool -importcert -alias filipaKS -file certfilipa.cer -storetype JKS -keystore truststore.clients
 
 Ver o conteúdo da keystore do servidor:
     keytool -list -storetype JCEKS -keystore keystore.server
