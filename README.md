@@ -20,8 +20,8 @@ Sendo que serverAddress tem o seguinte tipo: <IP/hostname>[:Port]
 Servidor:
     - keystore: "keystore.server"
     - keystore password: "serverpw"
-    - alias: "serverKS"
-    - key password for "serverKS": "serverpw"
+    - keypair: "serverKS"
+    - keypair password for "serverKS": "serverpw"
 
 Cliente:
     - truststore: "truststore.clients"
@@ -34,19 +34,20 @@ Cliente:
     - key password for "filipaKS": "filipapw"
 
 Criar o par de chaves RSA do servidor e o seu certificado auto-assinado:
-    keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.server
+    keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.server
 
 Exportar o certificado auto-assinado do servidor:
-    keytool -exportcert -alias serverKS -file certServer.cer -storetype JCEKS -keystore keystore.server
+    keytool -exportcert -alias serverKS -file certServer.cer -storetype PKCS12 -keystore keystore.server
 
 Criar a truststore para a aplicação cliente com o certificado do servidor:
     keytool -import -alias serverKS -file certServer.cer -storetype JKS -keystore truststore.clients
 
+
 Criar o par de chaves RSA do cliente <filipa> e o seu certificado auto-assinado:
-    keytool -genkeypair -alias filipaKS -keyalg RSA -keysize 2048 -storetype JCEKS -keystore keystore.filipa
+    keytool -genkeypair -alias filipaKS -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.filipa
 
 Exportar o certificado auto-assinado do cliente <filipa>:
-    keytool -exportcert -alias filipaKS -file certfilipa.cer -storetype JCEKS -keystore keystore.filipa
+    keytool -exportcert -alias filipaKS -file certfilipa.cer -storetype PKCS12 -keystore keystore.filipa
 
 Importar certificado do cliente <filipa> para a truststore:
     keytool -importcert -alias filipaKS -file certfilipa.cer -storetype JKS -keystore truststore.clients

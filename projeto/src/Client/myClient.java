@@ -69,7 +69,7 @@ public class myClient {
 
         try {
             FileInputStream kfile = new FileInputStream(keystore);
-            kstore = KeyStore.getInstance("JCEKS");
+            kstore = KeyStore.getInstance("PKCS12");
             kstore.load(kfile, passwordKeystore.toCharArray());
 
             // Get the aliases in the keystore

@@ -5,10 +5,8 @@ import Library.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.nio.ByteBuffer;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
@@ -110,7 +108,8 @@ public class myServer{
 		SSLServerSocket serverSocket;
 
         try {
-         	serverSocket = (SSLServerSocket) ssf.createServerSocket(port);
+			serverSocket = (SSLServerSocket) ssf.createServerSocket(port);
+			System.out.println("TintolmarketServer Iniciado");
 
 			// Thread para cada cliente
 			while(true) {
