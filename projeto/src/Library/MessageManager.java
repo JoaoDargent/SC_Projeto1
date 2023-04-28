@@ -9,7 +9,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static Server.myServer.filesPath;
 
@@ -42,12 +44,12 @@ public class MessageManager {
                 file.createNewFile();
             }
 
-            Object sndr = new Object();
-            sndr = sender;
+            /*Object sndr = new Object();
+            sndr = sender.getId();
             Object encmsg = new Object();
             encmsg = encryptedMessage;
 
-            FileOutputStream fout = new FileOutputStream(file);
+            FileOutputStream fout = new FileOutputStream(file, true);
             ObjectOutputStream out = new ObjectOutputStream(fout);
             out.writeObject(sndr);
             out.writeObject(encmsg);
@@ -58,28 +60,48 @@ public class MessageManager {
         }
     }
 
-    public Object[] read(FileManager fm, User reader) throws IOException, KeyStoreException, ClassNotFoundException {
+    public String read(FileManager fm, User reader) throws IOException, KeyStoreException, ClassNotFoundException {
         File file = new File(filesPath +"/Users/" + reader.getId() + "/messages.txt");
-        //String mensagem = fm.readContentFromFile(file);
-        Object[] contents = new Object[2];
 
-        if (file.length() == 0){
-            System.out.println("Nao tem mensagens novas");
-            return contents;
+        String mensagem = fm.readContentFromFile(file);
+
+        if (mensagem.equals("")){
+            return "Nao tem mensagens novas";
+        }
+        fm.writeContentToFile(file, "",false);
+        return mensagem;
+
+        /*
+        List<Object[]> messages = new ArrayList<>();
+
+        if (!file.exists() || file.length() == 0) {
+            System.out.println("No new messages");
+            return messages;
         }
 
-        FileInputStream fis = new FileInputStream(file);
-        ObjectInputStream in = new ObjectInputStream(fis);
-        //sender
-        contents[0] = in.readObject();
-        //message
-        contents[1] = in.readObject();
+        try (FileInputStream fis = new FileInputStream(file);
+             ObjectInputStream in = new ObjectInputStream(fis)) {
 
-        //apaga conteudos do ficheiro
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(new byte[0]);
+            while (true) {
+                try {
+                    Object[] linha = new Object[2];
+                    linha[0] = in.readObject();
+                    linha[1] = in.readObject();
+                    messages.add(linha);
+                } catch (EOFException e) {
+                    break;
+                }
+            }
+        }
 
-        //fm.writeContentToFile(file, "",false);
-        return contents;
+
+        // Clear the file contents
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(new byte[0]);
+            fos.close();
+        }
+         */
+
+        //return messages;
     }
 }

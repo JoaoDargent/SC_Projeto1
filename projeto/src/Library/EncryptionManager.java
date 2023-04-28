@@ -19,6 +19,8 @@ import java.nio.ByteBuffer;
 
 public class EncryptionManager {
 
+    private AlgorithmParameters paramsMsgCipher;
+
 
 
     public static File encryptFile(String fileToEncrypt, SecretKey secretKey) throws Exception {
@@ -142,15 +144,16 @@ public class EncryptionManager {
     }
 
     public byte[] encryptMsg(PublicKey key, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		Cipher c = Cipher.getInstance("RSA");
 		c.init(Cipher.ENCRYPT_MODE, key);
+        paramsMsgCipher = c.getParameters();
 		byte[] msgBytes = msg.getBytes( );
 		return c.doFinal(msgBytes);
     }
 
     public String decryptMsg(PrivateKey key, byte[] encryptedMsg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-		c.init(Cipher.DECRYPT_MODE, key);
+		Cipher c = Cipher.getInstance("RSA");
+		c.init(Cipher.DECRYPT_MODE, key, paramsMsgCipher);
 		byte[] msgBytes = c.doFinal(encryptedMsg);
 		return new String(msgBytes);
 	}

@@ -12,6 +12,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
@@ -95,7 +96,8 @@ public class myClient {
                     break;
                 }
             }
-            privateKey = (PrivateKey) kstore.getKey(alias, passwordKeystore.toCharArray());
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) kstore.getEntry(alias,new KeyStore.PasswordProtection(passwordKeystore.toCharArray()));
+            privateKey = privateKeyEntry.getPrivateKey();
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException e) {
             e.printStackTrace();
         }
@@ -247,17 +249,17 @@ public class myClient {
             case "t":
             case "talk":
                 String comandoT = scanner.nextLine();
-                String user = comandoT.split(" ")[1];
+                String receiver = comandoT.split(" ")[1];
                 //I want to slice comandoT from the 3rd element to the end
                 String message = comandoT.substring(comandoT.indexOf(" ", comandoT.indexOf(" ") + 1) + 1);
 
                 //out.writeObject("talk " + user + " " + message);
-                out.writeObject("talk " + clientId + " " + user);
+                out.writeObject("talk " + clientId + " " + receiver);
 
                 FileInputStream kfile = new FileInputStream(truststore); //keystore
                 KeyStore tstore = KeyStore.getInstance("JKS");
                 tstore.load(kfile, truststorePwd.toCharArray()); //password da keystore
-                Certificate cert = tstore.getCertificate(clientId + "KS"); //alias da keypair
+                Certificate cert = tstore.getCertificate(receiver + "KS"); //alias da keypair
 
                 // Get the PublicKey instance
                 PublicKey publicReceiverKey = cert.getPublicKey();
@@ -270,20 +272,29 @@ public class myClient {
             case "r":
             case "read":
                 out.writeObject("read");
-                String read = (String) in.readObject();
-                String[] lines = read.split("\n");
-                for (String line : lines) {
-                    int index = line.indexOf(":");
-                    if(index != -1){
-                        //imprime sender
-                        System.out.print(line.substring(0, index) + ":");
-                        //decifra mensagem cifrada
-                        byte[] mensagemCifrada = parseByteArray(line.substring(index + 1));
-                        String mensagem = encryptionManager.decryptMsg(privateKey, mensagemCifrada);
-                        System.out.println(mensagem);
-                    }
+                //receber lista de mensagens
+                /*@SuppressWarnings("unchecked")
+                List<Object[]> read = (List<Object[]>) in.readObject();
+
+
+                for (Object[] o : read) {
+                    System.out.print(o[0] + " : ");
+                    //decifrar mensagem
+                    String mensagem = encryptionManager.decryptMsg(privateKey, (byte[]) o[1]);
+                    System.out.println(mensagem);
+                }*/
+
+                String respostaR = (String) in.readObject();
+
+                String[] mensagens = respostaR.split("\n");
+
+                for(String m : mensagens){
+                    String[] mensagem = m.split(" : ");
+                    System.out.println(mensagem[0] + " : " + encryptionManager.decryptMsg(privateKey, parseByteArray(mensagem[1])));
                 }
-                //System.out.println(read);
+
+
+
                 break;
             case "h":
             case "help":
@@ -316,13 +327,15 @@ public class myClient {
 
     }
     private static byte[] parseByteArray(String s) {
-        String[] parts = s.substring(2, s.length() - 1).split(",");
-        byte[] result = new byte[parts.length];
-        for (int i = 0; i < parts.length; i++) {
-            result[i] = Byte.parseByte(parts[i].trim());
+        String[] byteStrings = s.substring(1, s.length() - 1).split(", ");
+        byte[] byteArray = new byte[byteStrings.length];
+        for (int i = 0; i < byteStrings.length; i++) {
+            byteArray[i] = Byte.parseByte(byteStrings[i]);
         }
-        return result;
+        return byteArray;
     }
+
+
 
 
 }
