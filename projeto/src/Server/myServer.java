@@ -245,7 +245,6 @@ public class myServer{
 						outStream.writeObject("Erro: Este userID esta registado mas a assinatura esta errada");
 					}
 				}
-
 				while(!socket.isClosed()){
 					String comando = (String) inStream.readObject();
 					String[] partsCmd = comando.split(" ");
@@ -324,8 +323,7 @@ public class myServer{
 				throw new RuntimeException(e);
 			} catch (InvalidAlgorithmParameterException e) {
 				throw new RuntimeException(e);
-			}
-		}
+			}}
 	}
 
     private void onLoad() throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {

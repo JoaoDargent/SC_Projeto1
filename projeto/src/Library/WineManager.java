@@ -52,10 +52,10 @@ public class WineManager {
         return true;
     }
 
-    public String viewWineByName(String name, String user) throws ClassNotFoundException, IOException{
+    public String viewWineByName(String name) throws ClassNotFoundException, IOException{
         for (Wine w : wines){
             if (w.getName().equals(name)){
-                return w.view(user);
+                return w.view();
             }
         }
         return "Não existe vinho com esse nome";
@@ -131,6 +131,7 @@ public class WineManager {
         getWineByName(wine).setQuantity(fileManager, userSeller, getWineByName(wine).getQuantity(userSeller) - quantity);
         return "Compra efetuada com sucesso";
     }
+
     public Wine getWineByName(String name){
         for (Wine w : wines){
             if (w.getName().equals(name)){

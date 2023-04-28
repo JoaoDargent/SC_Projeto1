@@ -8,7 +8,7 @@ public class User {
     private String id;
     private String pathToPublicKey;
 
-    private int balance;
+    private double balance;
 
     public User(String id, String pathToPublicKey) {
         this.id = id;
@@ -17,9 +17,9 @@ public class User {
 
     public String getId() { return id; }
     public String getPathToPublicKey() { return pathToPublicKey; }
-    public int getBalance() { return balance; }
+    public double getBalance() { return balance; }
 
-    public void setBalance(FileManager fileManager, int balance) throws IOException {
+    public void setBalance(FileManager fileManager, double balance) throws IOException {
         this.balance = balance;
         saveBalance(fileManager);
     }
@@ -35,7 +35,7 @@ public class User {
         }else if (!balanceFile.exists()){
             balanceFile.createNewFile();
         }
-        fileManager.writeContentToFile(balanceFile, Integer.toString(balance),false);
+        fileManager.writeContentToFile(balanceFile, Double.toString(balance),false);
     }
 
     public void loadBalance(String id, FileManager fileManager) throws IOException {

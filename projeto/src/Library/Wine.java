@@ -25,15 +25,15 @@ public class Wine {
         this.stars = 0;
     }
 
-    public String view(String user) throws ClassNotFoundException, IOException{
+    public String view() throws ClassNotFoundException, IOException{
         StringBuilder stringBuilder = new StringBuilder();
 
         if (getStockPrint().equals("")) {
-            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user
+            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada"
                                 + "\nClassificação média: " + this.stars + "\n" + "Não existem vinhos a venda");
         } else{
 
-            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada em files/clientFiles/" + user
+            stringBuilder.append("Nome: " + this.name + "\nImagem: enviada e guardada"
                     + "\nClassificação média: " + this.stars + "\n" + getStockPrint());
 
         }
@@ -50,16 +50,21 @@ public class Wine {
 
     public float getStars() {return stars;}
 
-    public int getValue(String seller) {
+    public double getValue(String seller) {
         //seller:price:quantity
+        double pricePerBottle = 0;
+
         for (String s : stock){
             String [] stockSplit = s.split(":");
-            if (stockSplit[0].equals(seller)){
+            String usrSeller = stockSplit[0];
+            int priceForAll = Integer.parseInt(stockSplit[1]);
+            int quantity = Integer.parseInt(stockSplit[2]);
+            if (usrSeller.equals(seller)){
                 //valor por garrafa
                 pricePerBottle += (double) priceForAll / quantity;
             }
         }
-        return 0;
+        return pricePerBottle;
     }
 
     public void setValue(int value) {this.value = value;}
