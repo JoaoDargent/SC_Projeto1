@@ -46,14 +46,14 @@ public class myClient {
         System.out.println("Tintolmarket <serverAddress> <truststore> <keystore> <password-keystore> <userID>");
         System.out.println("Note que serveraddress tem o seguinte formato: <IP/hostname>[:Port]. Caso não introduza a porta, será utilizada a 12345.");
 
-        //String fromUser = scanner.nextLine();
-        String fromUserInput = scanner.nextLine();
-        String fromUser = null;
-        if (fromUserInput.equals("f")){
-            fromUser = "Tintolmarket localhost truststore.clients keystore.filipa filipapw filipa";
-        }else{
-            fromUser = "Tintolmarket localhost truststore.clients keystore.joao joaopw joao";
-        }
+        String fromUser = scanner.nextLine();
+        //String fromUserInput = scanner.nextLine();
+        //String fromUser = null;
+        //if (fromUserInput.equals("f")){
+        //    fromUser = "Tintolmarket localhost truststore.clients keystore.filipa filipapw filipa";
+        //}else{
+        //    fromUser = "Tintolmarket localhost truststore.clients keystore.joao joaopw joao";
+        //}
         //If para caso nao seja passada a password
         if (fromUser.split(" ").length == 3) {
             System.out.println("Olá " + fromUser.split(" ")[2] + "! Por favor introduza a password: ");

@@ -60,8 +60,9 @@ public class myServer{
 		System.out.println("Introduza os seguintes parâmetros");
 		System.out.println("TintolmarketServer <port> <password-cifra> <keystore> <password-keystore>");
 		System.out.println("Caso omita port, será utilizado 12345.");
-		//String fromUser = inFromUser.readLine();
-		String fromUser = "a cifra keystore.server serverpw";
+		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+		String fromUser = inFromUser.readLine();
+		//String fromUser = "a cifra keystore.server serverpw";
 		String[] fromUserSplitted = fromUser.split(" ");
 		int port = 0;
 		String passwordCifra = null;
