@@ -7,16 +7,12 @@ import java.security.NoSuchAlgorithmException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static Server.myServer.filesPath;
 
 public class MessageManager {
-
 
     /***
      * talk <user> <message> - permite enviar uma mensagem privada ao utilizador user com o conteúdo message.

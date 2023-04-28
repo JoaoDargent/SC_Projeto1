@@ -15,18 +15,9 @@ public class User {
         this.pathToPublicKey = pathToPublicKey;
     }
 
-
-    public String getId() {
-        return id;
-    }
-
-
-    public String getPathToPublicKey() {
-        return pathToPublicKey;
-    }
-    public int getBalance() {
-        return balance;
-    }
+    public String getId() { return id; }
+    public String getPathToPublicKey() { return pathToPublicKey; }
+    public int getBalance() { return balance; }
 
     public void setBalance(FileManager fileManager, int balance) throws IOException {
         this.balance = balance;
@@ -34,9 +25,7 @@ public class User {
     }
 
     @Override
-    public String toString() {
-        return id + ":" + pathToPublicKey;
-    }
+    public String toString() { return id + ":" + pathToPublicKey; }
 
     private void saveBalance(FileManager fileManager) throws IOException {
         File balanceFile = new File (filesPath + "/Users/" + id + "/balance.txt");
@@ -46,7 +35,6 @@ public class User {
         }else if (!balanceFile.exists()){
             balanceFile.createNewFile();
         }
-
         fileManager.writeContentToFile(balanceFile, Integer.toString(balance),false);
     }
 
@@ -61,7 +49,5 @@ public class User {
             setBalance(fileManager,200);
         }
         else setBalance(fileManager,Integer.parseInt(filebalance));
-
-
     }
 }

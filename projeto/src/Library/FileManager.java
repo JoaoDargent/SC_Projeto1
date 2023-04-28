@@ -1,7 +1,6 @@
 package Library;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
@@ -21,9 +20,7 @@ public class FileManager {
             }else{
                 fileToWrite.write(message + "\n");
             }
-
             fileToWrite.close();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,9 +45,7 @@ public class FileManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return stringBuilder.toString();
-
     }
 
     /***
@@ -80,11 +75,10 @@ public class FileManager {
      * Recebe um ficheiro do cliente
      * @param inStream - stream de entrada do cliente
      * @param path - caminho onde o ficheiro vai ser guardado
-     * @param fileName - nome do ficheiro a ser guardado
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public void receiveFile(ObjectInputStream inStream, String path/* , String fileName*/) throws IOException, ClassNotFoundException {
+    public void receiveFile(ObjectInputStream inStream, String path) throws IOException, ClassNotFoundException {
         String fileName = (String) inStream.readObject();
         long fileLength = inStream.readLong();
         

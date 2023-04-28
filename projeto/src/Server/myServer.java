@@ -159,9 +159,7 @@ public class myServer{
 				File usersFile = new File(filesPath + usersPath);
 				File usersPFolder = new File(usersP);
 
-
 				/******** Autenticacao 2a fase ********/
-
 				//Recebe o userID do cliente
 				String userId = (String) inStream.readObject();
 				System.out.println("User ID: " + userId);
@@ -172,16 +170,11 @@ public class myServer{
 				boolean isRegistered = userManager.checkIfUserExists(userId);
 				outStream.writeObject(isRegistered);
 
-
-
-
                 /*Se nao estiver registado, o cliente tem de:
 					Devolver o nonce enviado pelo servidor
 					Enviar o nonce cifrado com a chave privada do cliente
 					Enviar o certificado do cliente com a chave publica
 				 */
-
-
 				if(!isRegistered){
 					long nonceReturned = (long) inStream.readObject();
 					byte[] nonceSigned = (byte[]) inStream.readObject();
@@ -190,14 +183,12 @@ public class myServer{
 					String nonceCheck = nonceCheck(userId, nonceReturned, nonceSigned, nonce, chavePublica);
 
 					if(nonceCheck.equals("Verificacao feita com sucesso")){
-
 						//Cria a pasta do user
 						File userFolder = new File(filesPath + "/Users/" + userId + "/");
 						userFolder.mkdirs();
 
 						fileManager.writeCertToFile(userCert, filesPath + "/Users/" + userId + "/" +  "cert.cer");
 						user = new User(userId, filesPath + "/Users/" + userId + "/" +  "cert.cer");
-
 
 						/****** Caso seja o primeiro user******/
 						if (!(new File(filesPath + "users.cif").exists())) {
@@ -218,16 +209,15 @@ public class myServer{
 							encryptionManager.decryptUsersTxt(usersTxtkey, paramsPBE);
 							userRegister(user);
 							encryptionManager.encryptUsersTxt(usersTxtkey);
-
 						}
 
 						outStream.writeObject("Verificacao feita com sucesso");
 					} else if (nonceCheck.equals("Erro: nonce assinado diferente")) {
 						outStream.writeObject("Erro: nonce assinado diferente");
-					}else{
+					} else {
 						outStream.writeObject("Erro: primeiro nonce retornado diferente");
 					}
-				}else{
+				} else {
 					FileInputStream fis = new FileInputStream(filesPath + "/Users/" + userId + "/" +  "cert.cer");
 					CertificateFactory cf = CertificateFactory.getInstance("X.509");
 					X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
@@ -236,11 +226,10 @@ public class myServer{
 
 					if (encryptionManager.checkSignedNonce(nonceSigned, chavePublica, nonce)){
 						outStream.writeObject("Verificacao feita com sucesso");
-					}else{
+					} else {
 						outStream.writeObject("Erro: Este userID esta registado mas a assinatura esta errada");
 					}
 				}
-
 
 				while(!socket.isClosed()){
 					String comando = (String) inStream.readObject();
@@ -297,16 +286,13 @@ public class myServer{
 							break;
 					}
 				}
-
 				outStream.close();
 				inStream.close();
-
 				socket.close();
 
 			} catch(IOException | ClassNotFoundException e ){
 				e.printStackTrace();
 			} catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}   catch (NoSuchPaddingException e) {
 				e.printStackTrace();

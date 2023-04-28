@@ -12,9 +12,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Scanner;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -41,12 +39,6 @@ public class myClient {
         myClient client = new myClient();
         client.startClient();
     }
-
-
-    //Socket clientSocket = new Socket(InetAddress.getLocalHost(), 23456);
-    //ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-    //ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-
 
     private void startClient() throws IOException, ClassNotFoundException, SignatureException, Exception {
         Scanner scanner = new Scanner(System.in);
@@ -132,7 +124,6 @@ public class myClient {
             e.printStackTrace();
         }
 
-
         if (registered) {
             //Envia nonce assinado com chave privada
             out.writeObject(signedNonce);
@@ -154,7 +145,6 @@ public class myClient {
             X509Certificate cert = (X509Certificate) cf.generateCertificate(fis);
             out.writeObject(cert);
         }
-
 
         //Recebe resposta do servidor
         String respostaCredenciais = (String) in.readObject();
@@ -272,29 +262,13 @@ public class myClient {
             case "r":
             case "read":
                 out.writeObject("read");
-                //receber lista de mensagens
-                /*@SuppressWarnings("unchecked")
-                List<Object[]> read = (List<Object[]>) in.readObject();
-
-
-                for (Object[] o : read) {
-                    System.out.print(o[0] + " : ");
-                    //decifrar mensagem
-                    String mensagem = encryptionManager.decryptMsg(privateKey, (byte[]) o[1]);
-                    System.out.println(mensagem);
-                }*/
-
                 String respostaR = (String) in.readObject();
-
                 String[] mensagens = respostaR.split("\n");
 
                 for(String m : mensagens){
                     String[] mensagem = m.split(" : ");
                     System.out.println(mensagem[0] + " : " + encryptionManager.decryptMsg(privateKey, parseByteArray(mensagem[1])));
                 }
-
-
-
                 break;
             case "h":
             case "help":
@@ -324,8 +298,8 @@ public class myClient {
                 cSocket.close();
                 System.exit(0);
         }
-
     }
+
     private static byte[] parseByteArray(String s) {
         String[] byteStrings = s.substring(1, s.length() - 1).split(", ");
         byte[] byteArray = new byte[byteStrings.length];
@@ -334,8 +308,4 @@ public class myClient {
         }
         return byteArray;
     }
-
-
-
-
 }

@@ -21,8 +21,6 @@ public class EncryptionManager {
 
     private AlgorithmParameters paramsMsgCipher;
 
-
-
     public static File encryptFile(String fileToEncrypt, SecretKey secretKey) throws Exception {
 
         // create a new file object
@@ -67,7 +65,6 @@ public class EncryptionManager {
         File encryptedFile = new File(fileName + ".cif");
         return encryptedFile;
     }
-
 
     public static File decryptFile(File file, Key key) throws Exception {
 

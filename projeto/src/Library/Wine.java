@@ -9,7 +9,6 @@ import static Library.WineManager.winesFolder;
 
 public class Wine {
 
-
     private static ArrayList<String> stock;
     //seller:price:quantity
     private final String name;
@@ -38,7 +37,6 @@ public class Wine {
                     + "\nClassificação média: " + this.stars + "\n" + getStockPrint());
 
         }
-
         return stringBuilder.toString();
     }
 
@@ -112,7 +110,7 @@ public class Wine {
                     stock.remove(s);
                 }
             }
-        }else{
+        } else {
             for (String s : stock){
                 String [] stockSplit = s.split(":");
                 if (stockSplit[0].equals(userSeller)){
@@ -129,6 +127,5 @@ public class Wine {
         for (String s : stock) {
             fileManager.writeContentToFile(stockFile, s, true);
         }
-
     }
 }
