@@ -1,7 +1,6 @@
 package Library;
 
 import java.io.*;
-import java.security.PublicKey;
 
 import static Server.myServer.filesPath;
 
@@ -51,7 +50,7 @@ public class User {
         fileManager.writeContentToFile(balanceFile, Integer.toString(balance),false);
     }
 
-    public void loadBalance(FileManager fileManager) throws IOException {
+    public void loadBalance(String id, FileManager fileManager) throws IOException {
         File balanceFile = new File (filesPath + "/Users/" + id + "/balance.txt");
         //check if file exists
         if (!balanceFile.exists()){

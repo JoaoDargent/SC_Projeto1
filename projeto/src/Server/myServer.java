@@ -11,11 +11,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -42,22 +44,19 @@ public class myServer{
 
 	protected byte[] paramsPBE;
 
-	public myServer(String[] args) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public myServer(String[] args) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
 		main(args);
 	}
 
 	public myServer() {}
 
-	public static void main(String[] args) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+	public static void main(String[] args) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
 		System.out.println("servidor: main");
 		myServer server = new myServer();
 		server.startServer();
 	}
 
-	public void startServer () throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		ServerSocket sSoc = null;
-		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-
+	public void startServer () throws IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
 		System.out.println("Introduza os seguintes parâmetros");
 		System.out.println("TintolmarketServer <port> <password-cifra> <keystore> <password-keystore>");
 		System.out.println("Caso omita port, será utilizado 12345.");
@@ -87,22 +86,36 @@ public class myServer{
 		byte[] salt = { (byte) 0xc9, (byte) 0x36, (byte) 0x78, (byte) 0x99, (byte) 0x52, (byte) 0x3e, (byte) 0xea, (byte) 0xf2 };
 		PBEKeySpec keySpec = new PBEKeySpec(passwordCifra.toCharArray(), salt, 20);
 		SecretKeyFactory kf = SecretKeyFactory.getInstance("PBEWithHmacSHA256AndAES_128");
-		usersTxtkey = kf.generateSecret(keySpec);
+		File usersTxtkeyFile = new File(filesPath + "usersTxtkey.ser");
+		if(usersTxtkeyFile.exists()){
 
+			FileInputStream fileIn = new FileInputStream(filesPath + "usersTxtkey.ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			byte[] keyBytes  = (byte[]) in.readObject();
 
+			// Reconstruct the SecretKey object
+			usersTxtkey = new SecretKeySpec(keyBytes, "PBEWithHmacSHA256AndAES_128");
 
+			in.close();
+			fileIn.close();
+		}else{
+			File files = new File(filesPath);
+			if(!files.exists()) files.mkdirs();
 
-
-
-		//Arranca socket com a port passada como argumento ou com a port 12345 caso nao seja passada nenhuma
-		//sSoc = new ServerSocket(port); //Inicia ss com a port passada como argumento
-
+			usersTxtkey = kf.generateSecret(keySpec);
+			FileOutputStream fileOut = new FileOutputStream(filesPath + "usersTxtkey.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(usersTxtkey.getEncoded());
+			out.flush();
+			out.close();
+			fileOut.close();
+		}
 
 		System.setProperty("javax.net.ssl.keyStore", keystore);
 		System.setProperty("javax.net.ssl.keyStoreType", "PKCS12");
 		System.setProperty("javax.net.ssl.keyStorePassword", keystorePwd);
 
-		//onLoad();
+		onLoad();
 
 		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 		SSLServerSocket serverSocket;
@@ -142,9 +155,6 @@ public class myServer{
 			try {
 				ObjectOutputStream outStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inStream = new ObjectInputStream(socket.getInputStream());
-
-				File files = new File(filesPath);
-				if(!files.exists()) files.mkdirs();
 
 				File usersFile = new File(filesPath + usersPath);
 				File usersPFolder = new File(usersP);
@@ -195,10 +205,16 @@ public class myServer{
 								usersFile.createNewFile();
 								userRegister(user);
 								paramsPBE = encryptionManager.encryptUsersTxt(usersTxtkey);
-							}
-						}
 
-						else{
+								FileOutputStream fileOut = new FileOutputStream(filesPath + "usersPBE.ser");
+								ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+								out.writeObject(paramsPBE);
+								out.flush();
+								out.close();
+								fileOut.close();
+							}
+						} else {
 							encryptionManager.decryptUsersTxt(usersTxtkey, paramsPBE);
 							userRegister(user);
 							encryptionManager.encryptUsersTxt(usersTxtkey);
@@ -307,45 +323,74 @@ public class myServer{
 			}
 		}
 	}
-    /*private void onLoad() throws IOException {
-		File usersTXT = new File(filesPath+usersPath);
-		if(usersTXT.exists()){
-		String usersContent = fileManager.readContentFromFile(usersTXT);
-		String[] users = usersContent.split("\n");
-			for (String user : users){
-				if (!userManager.checkIfUserExists(user)){
-					String[] userSplitted = user.split(":");
-					User userTest = new User(userSplitted[0]);
-					userRegisterOnLoad(userTest);
-					userTest.loadBalance(fileManager);
+
+    private void onLoad() throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, ClassNotFoundException {
+
+		//Check if usersPBE.txt exists
+		File usersPBE = new File( filesPath + "usersPBE.ser");
+		if (usersPBE.exists()) {
+
+			FileInputStream fileIn = new FileInputStream(filesPath + "usersPBE.ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			paramsPBE = (byte[]) in.readObject();
+			in.close();
+			fileIn.close();
+
+			File usersFile = new File(filesPath + "users.cif");
+			if (usersFile.exists()) {
+				encryptionManager.decryptUsersTxt(usersTxtkey, paramsPBE);
+				File usersTxt = new File(filesPath + "users.txt");
+				String usersContent = fileManager.readContentFromFile(usersTxt);
+				String[] users = usersContent.split("\n");
+				for (String user : users) {
+					if (!userManager.checkIfUserExists(user)) {
+						String[] userSplitted = user.split(":");
+						User userTest = new User(userSplitted[0], userSplitted[1]);
+						userRegisterOnLoad(userTest);
+						userTest.loadBalance(userTest.getId(), fileManager);
+					}
+				}
+				paramsPBE = encryptionManager.encryptUsersTxt(usersTxtkey);
+
+				FileOutputStream fileOut = new FileOutputStream(filesPath + "usersPBE.ser");
+				ObjectOutputStream out = new ObjectOutputStream(fileOut);
+				out.writeObject(paramsPBE);
+				out.flush();
+				out.close();
+				fileOut.close();
+
+
+			}
+
+			File winesFolders = new File(filesPath + "/Wines/");
+			//How to get a list of all folders in a directory
+			File[] wines = winesFolders.listFiles();
+			if (wines != null) {
+				for (File wine : wines) {
+					if (!wineManager.checkIfWineExists(wine.getName())) {
+						File wineFolder = new File(filesPath + "/Wines/" + wine.getName() + "/");
+						Wine wineTest = new Wine(wine.getName(), wine.getName() + ".jpg");
+						wineManager.addWine(wineTest);
+
+						File stockTXT = new File(wineFolder + "/stock.txt");
+						fileManager.readContentFromFile(stockTXT);
+						String[] stockLine = fileManager.readContentFromFile(stockTXT).split("\n");
+
+						for (int i = 0; i < stockLine.length; i++) {
+							String[] stock = stockLine[i].split(":");
+							wineManager.addWineToStock(fileManager, userManager.getUserById(stock[0]), wineTest.getName(), Integer.parseInt(stock[1]), Integer.parseInt(stock[2]));
+						}
+
+						File classifyTXT = new File(wineFolder + "/classify.txt");
+						String[] classify = fileManager.readContentFromFile(classifyTXT).split("\n");
+						for (String s : classify) {
+							wineTest.setStars(Integer.parseInt(s));
+						}
+					}
 				}
 			}
 		}
-
-		File winesFolders = new File(filesPath+"/Wines/");
-		//How to get a list of all folders in a directory
-		File[] wines = winesFolders.listFiles();
-		if (wines != null) {
-			for (File wine : wines) {
-				if(!wineManager.checkIfWineExists(wine.getName())){
-					File wineFolder = new File(filesPath + "/Wines/" + wine.getName());
-					Wine wineTest = new Wine(wine.getName(), wine.getName() + ".jpg");
-					wineManager.addWine(wineTest);
-
-					File stockTXT = new File(wineFolder + "/stock.txt");
-					fileManager.readContentFromFile(stockTXT);
-					String[] stock = fileManager.readContentFromFile(stockTXT).split("\n");
-					ArrayList<String> stockLoad = new ArrayList<>();
-					wineTest.setStock(stockLoad);
-
-					File classifyTXT = new File(wineFolder + "/classify.txt");
-					String[] classify = fileManager.readContentFromFile(classifyTXT).split("\n");
-					ArrayList<String> classifyLoad = new ArrayList<>();
-					wineTest.setStarsLoad(fileManager, classifyLoad);
-				}
-			}
-		}
-	}*/
+	}
 
 	private void userRegisterOnLoad(User userTest) throws IOException {
 		userManager.addUser(userTest);
@@ -369,5 +414,14 @@ public class myServer{
 		} else {
 			return "Erro: primeiro nonce retornado diferente";
 		}
+	}
+
+	private static byte[] parseByteArray(String s) {
+		String[] byteStrings = s.substring(1, s.length() - 1).split(", ");
+		byte[] byteArray = new byte[byteStrings.length];
+		for (int i = 0; i < byteStrings.length; i++) {
+			byteArray[i] = Byte.parseByte(byteStrings[i]);
+		}
+		return byteArray;
 	}
 }

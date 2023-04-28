@@ -20,7 +20,7 @@ public class WineManager {
 
     public WineManager() {
         this.wines = new ArrayList<>();
-        loadData();
+        //loadData();
     }
 
     public boolean addWine(Wine wine) throws IOException {
@@ -158,7 +158,7 @@ public class WineManager {
         }
         //Classify wine
         Wine wineToClassify = getWineByName(wine);
-        wineToClassify.setStars(fm,stars);
+        wineToClassify.setStars(stars);
         File classifyFile = new File(winesFolder + "/" + wine + "/classify.txt");
         fm.writeContentToFile(classifyFile, stars + "", true);
         return "Vinho classificado com sucesso!";

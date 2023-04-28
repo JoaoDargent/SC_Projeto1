@@ -68,18 +68,9 @@ public class Wine {
 
     private int i = 1;
     //private double averageStars = 0.0;
-    public void setStars(FileManager fileManager, int stars) {
+    public void setStars(int stars) {
         this.stars = (this.stars * (i - 1) + stars) / i;
         i++;
-        File classifyFile = new File("../files/serverFiles/Wines/" + this.getName() + "/classify.txt");
-        fileManager.writeContentToFile(classifyFile, "i:" + stars, false);
-    }
-
-    public void setStarsLoad(FileManager fileManager, ArrayList<String> stars) {
-            //for each element in stars do setStars
-            for (String s : stars){
-                setStars(fileManager, (int) Float.parseFloat(s));
-            }
     }
 
     public String getStockPrint(){

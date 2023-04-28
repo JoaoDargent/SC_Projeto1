@@ -44,18 +44,6 @@ public class MessageManager {
                 file.createNewFile();
             }
 
-            /*Object sndr = new Object();
-            sndr = sender.getId();
-            Object encmsg = new Object();
-            encmsg = encryptedMessage;
-
-            FileOutputStream fout = new FileOutputStream(file, true);
-            ObjectOutputStream out = new ObjectOutputStream(fout);
-            out.writeObject(sndr);
-            out.writeObject(encmsg);
-            out.flush();
-            out.close();
-            fout.close();*/
             fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
             return "Mensagem enviada com sucesso";
         }
@@ -71,38 +59,5 @@ public class MessageManager {
         }
         fm.writeContentToFile(file, "",false);
         return mensagem;
-
-        /*
-        List<Object[]> messages = new ArrayList<>();
-
-        if (!file.exists() || file.length() == 0) {
-            System.out.println("No new messages");
-            return messages;
-        }
-
-        try (FileInputStream fis = new FileInputStream(file);
-             ObjectInputStream in = new ObjectInputStream(fis)) {
-
-            while (true) {
-                try {
-                    Object[] linha = new Object[2];
-                    linha[0] = in.readObject();
-                    linha[1] = in.readObject();
-                    messages.add(linha);
-                } catch (EOFException e) {
-                    break;
-                }
-            }
-        }
-
-
-        // Clear the file contents
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(new byte[0]);
-            fos.close();
-        }
-         */
-
-        //return messages;
     }
 }
