@@ -48,6 +48,6 @@ public class User {
         if (filebalance.equals("")){
             setBalance(fileManager,200);
         }
-        else setBalance(fileManager,Integer.parseInt(filebalance));
+        else setBalance(fileManager,Double.parseDouble(filebalance));
     }
 }

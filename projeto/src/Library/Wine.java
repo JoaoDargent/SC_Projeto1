@@ -9,7 +9,7 @@ import static Library.WineManager.winesFolder;
 
 public class Wine {
 
-    private static ArrayList<String> stock;
+    private ArrayList<String> stock;
     //seller:price:quantity
     private final String name;
     private final String image;
@@ -56,7 +56,7 @@ public class Wine {
             String [] stockSplit = s.split(":");
             if (stockSplit[0].equals(seller)){
                 //valor por garrafa
-                return Integer.parseInt(stockSplit[1])/Integer.parseInt(stockSplit[2]);
+                pricePerBottle += (double) priceForAll / quantity;
             }
         }
         return 0;
@@ -86,7 +86,7 @@ public class Wine {
     public String getSeller() {return this.seller;}
 
     public void setStock(ArrayList<String> stk) {
-       stock = stk;
+       this.stock = stk;
     }
 
     public int getQuantity(String userSeller) {

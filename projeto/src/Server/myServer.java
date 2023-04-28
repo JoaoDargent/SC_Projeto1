@@ -213,7 +213,15 @@ public class myServer{
 						} else {
 							encryptionManager.decryptUsersTxt(usersTxtkey, paramsPBE);
 							userRegister(user);
-							encryptionManager.encryptUsersTxt(usersTxtkey);
+							paramsPBE = encryptionManager.encryptUsersTxt(usersTxtkey);
+
+							FileOutputStream fileOut = new FileOutputStream(filesPath + "usersPBE.ser");
+							ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+							out.writeObject(paramsPBE);
+							out.flush();
+							out.close();
+							fileOut.close();
 						}
 
 						outStream.writeObject("Verificacao feita com sucesso");
@@ -229,8 +237,10 @@ public class myServer{
 					PublicKey chavePublica = cert.getPublicKey();
 					byte[] nonceSigned = (byte[]) inStream.readObject();
 
+
 					if (encryptionManager.checkSignedNonce(nonceSigned, chavePublica, nonce)){
 						outStream.writeObject("Verificacao feita com sucesso");
+						user = userManager.getUserById(userId);
 					} else {
 						outStream.writeObject("Erro: Este userID esta registado mas a assinatura esta errada");
 					}
@@ -258,7 +268,7 @@ public class myServer{
 							outStream.writeObject(resposta);
 							break;
 						case "view":
-							outStream.writeObject(wineManager.viewWineByName(partsCmd[1], user.getId()));
+							outStream.writeObject(wineManager.viewWineByName(partsCmd[1]));
 							if(wineManager.checkIfWineExists(partsCmd[1])){
 								outStream.writeObject(true);
 								fileManager.sendFile(outStream,filesPath + "Wines/" + partsCmd[1] + "/", partsCmd[1] + ".jpg");
@@ -267,7 +277,7 @@ public class myServer{
 							}
 							break;
 						case "buy":
-							outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2],user.getId(), Integer.parseInt(partsCmd[3])));
+							outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2], user.getId(), Integer.parseInt(partsCmd[3])));
 							break;
 						case "wallet":
 							outStream.writeObject(user.getBalance());
@@ -288,6 +298,9 @@ public class myServer{
 							outStream.close();
 							socket.close();
 							Thread.currentThread().interrupt();
+							break;
+						default:
+							outStream.writeObject("Comando nao reconhecido");
 							break;
 					}
 				}
@@ -364,19 +377,27 @@ public class myServer{
 						wineManager.addWine(wineTest);
 
 						File stockTXT = new File(wineFolder + "/stock.txt");
-						fileManager.readContentFromFile(stockTXT);
-						String[] stockLine = fileManager.readContentFromFile(stockTXT).split("\n");
+						if (stockTXT.length()!=0){
+							String[] stockLine = fileManager.readContentFromFile(stockTXT).split("\n");
 
-						for (int i = 0; i < stockLine.length; i++) {
-							String[] stock = stockLine[i].split(":");
-							wineManager.addWineToStock(fileManager, userManager.getUserById(stock[0]), wineTest.getName(), Integer.parseInt(stock[1]), Integer.parseInt(stock[2]));
+							for (String strings: stockLine) {
+								String[] stock = strings.split(":");
+								wineManager.addWineToStockOnLoad(stock[0], wineTest, Integer.parseInt(stock[1]), Integer.parseInt(stock[2]));
+							}
 						}
+
+
 
 						File classifyTXT = new File(wineFolder + "/classify.txt");
-						String[] classify = fileManager.readContentFromFile(classifyTXT).split("\n");
-						for (String s : classify) {
-							wineTest.setStars(Integer.parseInt(s));
+						if (classifyTXT.length()!=0){
+							String[] classify = fileManager.readContentFromFile(classifyTXT).split("\n");
+							if (classify.length > 0) {
+								for (String s : classify) {
+									wineTest.setStars(Integer.parseInt(s));
+								}
+							}
 						}
+
 					}
 				}
 			}

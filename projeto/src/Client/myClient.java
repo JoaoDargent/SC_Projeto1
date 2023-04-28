@@ -127,8 +127,19 @@ public class myClient {
         if (registered) {
             //Envia nonce assinado com chave privada
             out.writeObject(signedNonce);
+            String resposta = (String) in.readObject();
+            if (resposta.equals("Verificacao feita com sucesso")) {
+                System.out.println("Verificacao feita com sucesso");
+            } else {
+                System.out.println("Erro: Este userID esta registado mas a assinatura esta errada");
+                out.close();
+                in.close();
+                scanner.close();
+                cSocket.close();
+                System.exit(0);
+            }
             while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira h");
                 recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         } else {
@@ -151,13 +162,13 @@ public class myClient {
         if (respostaCredenciais.equals("Verificacao feita com sucesso") && registered){
             System.out.println("Verificacao feita com sucesso!");
             while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira h");
                 recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         }else if (respostaCredenciais.equals("Verificacao feita com sucesso") && !registered) {
             System.out.println("Registado com sucesso!");
             while (true) {
-                System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
+                System.out.println("Insira um comando! caso queira ver a lista de comandos insira h");
                 recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         }else {
@@ -225,7 +236,7 @@ public class myClient {
             case "w":
             case "wallet":
                 out.writeObject("wallet");
-                int wallet = Integer.parseInt((String) in.readObject());
+                double wallet = (double) in.readObject();
                 System.out.println("O seu saldo é: " + wallet);
                 break;
             case "c":
@@ -265,6 +276,11 @@ public class myClient {
                 String respostaR = (String) in.readObject();
                 String[] mensagens = respostaR.split("\n");
 
+                if (respostaR.length() == 0){
+                    System.out.println("Não tem mensagens novas");
+                    break;
+                }
+
                 for(String m : mensagens){
                     String[] mensagem = m.split(" : ");
                     System.out.println(mensagem[0] + " : " + encryptionManager.decryptMsg(privateKey, parseByteArray(mensagem[1])));
@@ -297,6 +313,9 @@ public class myClient {
                 scanner.close();
                 cSocket.close();
                 System.exit(0);
+            case default:
+                System.out.println("Comando inválido");
+                break;
         }
     }
 

@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
 public class WineManager {
 
     FileManager fileManager = new FileManager();
@@ -77,6 +78,12 @@ public class WineManager {
         fm.writeContentToFile(stockFile, seller.getId() + ":" + value + ":" + quantity, true);
         return "Vinho adicionado ao stock com sucesso";
     }
+    public String addWineToStockOnLoad(String seller, Wine wine, int value, int quantity){
+        ArrayList<String> stock = wine.getStock();
+        stock.add(seller + ":" + value + ":" + quantity);
+        wine.setStock(stock);
+        return "Vinho adicionado ao stock com sucesso";
+    }
 
     //sell wine
 
@@ -109,8 +116,16 @@ public class WineManager {
 
         // efetuar a compra
         //atualiza balance do comprador e do vendedor
-        um.getUserById(userBuyer).setBalance(fileManager,um.getUserById(userBuyer).getBalance() - (getWineByName(wine).getValue(userSeller)*quantity));
-        um.getUserById(userSeller).setBalance(fileManager,um.getUserById(userSeller).getBalance() + (getWineByName(wine).getValue(userSeller)*quantity));
+        User buyer = um.getUserById(userBuyer);
+        User seller = um.getUserById(userSeller);
+
+        double buyerbalance = buyer.getBalance();
+        double sellerbalance = seller.getBalance();
+
+        double transacao = wineObj.getValue(userSeller)*quantity;
+
+        buyer.setBalance(fileManager, buyerbalance - transacao);
+        seller.setBalance(fileManager, sellerbalance + transacao);
 
         //atualiza stock do vendedor
         getWineByName(wine).setQuantity(fileManager, userSeller, getWineByName(wine).getQuantity(userSeller) - quantity);
