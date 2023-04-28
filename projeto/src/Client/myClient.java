@@ -192,6 +192,7 @@ public class myClient {
                     System.out.println("O vinho indicado já existe.");
                 } else {
                     fileManager.sendFile(out, "../", image);
+                    System.out.println("Vinho adicionado com sucesso");
                 }
                 break;
             case "s":
@@ -211,7 +212,6 @@ public class myClient {
                 Boolean exists = (Boolean) in.readObject();
                 if(exists)
                     fileManager.receiveFile(in, "../files/clientFiles/" + clientId + "/");
-                //Limitação do cliente: fica pendurado após receber o ficheiro
                 break;
             case "b":
             case "buy":
@@ -225,7 +225,7 @@ public class myClient {
             case "w":
             case "wallet":
                 out.writeObject("wallet");
-                int wallet = (int) in.readObject();
+                int wallet = Integer.parseInt((String) in.readObject());
                 System.out.println("O seu saldo é: " + wallet);
                 break;
             case "c":

@@ -183,7 +183,12 @@ public class myServer{
 					String nonceCheck = nonceCheck(userId, nonceReturned, nonceSigned, nonce, chavePublica);
 
 					if(nonceCheck.equals("Verificacao feita com sucesso")){
-						//Cria a pasta do user
+						//cria a pasta dos clientFiles
+						if(!usersPFolder.exists()) usersPFolder.mkdir();
+						File userFdr = new File(usersPFolder + "/" + userId + "/");
+						userFdr.mkdir();
+
+						//Cria a pasta do user no serverFiles
 						File userFolder = new File(filesPath + "/Users/" + userId + "/");
 						userFolder.mkdirs();
 
