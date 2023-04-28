@@ -32,29 +32,54 @@ public class MessageManager {
             return "Utilizador para quem pretende enviar nao existe";
         } else {
             User Ureceiver = um.getUserById(receiver);
-        
-            File file = new File(filesPath +"/Users/" + Ureceiver.getId() + "/messages.txt");
+
+            File file = new File(filesPath + "/Users/" + Ureceiver.getId() + "/messages.txt");
             //Check if directory exists
-            if (!file.getParentFile().exists()){
+            if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
             } else if (!file.exists()) {
                 file.createNewFile();
             }
 
-            fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
+            Object sndr = new Object();
+            sndr = sender;
+            Object encmsg = new Object();
+            encmsg = encryptedMessage;
+
+            FileOutputStream fout = new FileOutputStream(file);
+            ObjectOutputStream out = new ObjectOutputStream(fout);
+            out.writeObject(sndr);
+            out.writeObject(encmsg);
+            out.close();
+            fout.close();
+            //fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
             return "Mensagem enviada com sucesso";
         }
     }
 
-    public String read(FileManager fm, User reader) throws FileNotFoundException, KeyStoreException{
+    public Object[] read(FileManager fm, User reader) throws IOException, KeyStoreException, ClassNotFoundException {
         File file = new File(filesPath +"/Users/" + reader.getId() + "/messages.txt");
-        String mensagem = fm.readContentFromFile(file);
+        //String mensagem = fm.readContentFromFile(file);
+        Object[] contents = new Object[2];
 
-        if (mensagem.equals("")){
-            return "Nao tem mensagens novas";
+        if (file.length() == 0){
+            System.out.println("Nao tem mensagens novas");
+            return contents;
         }
-        fm.writeContentToFile(file, "",false);
-        return mensagem;
+
+        FileInputStream fis = new FileInputStream(file);
+        ObjectInputStream in = new ObjectInputStream(fis);
+        //sender
+        contents[0] = in.readObject();
+        //message
+        contents[1] = in.readObject();
+
+        //apaga conteudos do ficheiro
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(new byte[0]);
+
+        //fm.writeContentToFile(file, "",false);
+        return contents;
     }
 }
