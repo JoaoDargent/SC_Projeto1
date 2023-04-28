@@ -103,6 +103,18 @@ public class EncryptionManager {
             return false;
     }
 
+    public boolean signatureConfirmationBuySell (byte[] msgEncriptada, PublicKey chave, String mensagemOriginal) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        Signature s = Signature.getInstance("MD5withRSA");
+        s.initVerify(chave);
+        s.update(mensagemOriginal.getBytes());
+        if (s.verify(msgEncriptada))
+            return true;
+        else
+            return false;
+
+
+    }
+
     public byte[] longToBytes(long x) {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(x);

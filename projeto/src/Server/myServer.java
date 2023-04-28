@@ -262,10 +262,25 @@ public class myServer{
 							}
 							break;
 						case "sell":
-							//Caso o vinho nao exista e devolvido um erro
-							if (!wineManager.checkIfWineExists(partsCmd[1])) outStream.writeObject("O vinho nao existe");
-							String resposta = wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
-							outStream.writeObject(resposta);
+							String wineS = partsCmd[1];
+							String value = partsCmd[2];
+							String quantityS = partsCmd[3];
+							String mensagemS = ("sell " + wineS + " " +  value + " " + quantityS);
+
+							FileInputStream fisS = new FileInputStream(filesPath + "/Users/" + userId + "/" +  "cert.cer");
+							CertificateFactory cfS = CertificateFactory.getInstance("X.509");
+							X509Certificate certS = (X509Certificate) cfS.generateCertificate(fisS);
+							PublicKey chavePublica = certS.getPublicKey();
+
+							byte[] msgEncriptada = (byte[]) inStream.readObject();
+
+							if (encryptionManager.signatureConfirmationBuySell(msgEncriptada, chavePublica, mensagemS)){
+								if (!wineManager.checkIfWineExists(partsCmd[1])) outStream.writeObject("O vinho nao existe");
+								String resposta = wineManager.addWineToStock(fileManager, user, partsCmd[1], Integer.parseInt(partsCmd[2]), Integer.parseInt(partsCmd[3]));
+								outStream.writeObject(resposta);
+							}else{
+								outStream.writeObject("Erro: assinatura errada");
+							}
 							break;
 						case "view":
 							outStream.writeObject(wineManager.viewWineByName(partsCmd[1]));
@@ -277,7 +292,24 @@ public class myServer{
 							}
 							break;
 						case "buy":
-							outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2], user.getId(), Integer.parseInt(partsCmd[3])));
+							String wineB = partsCmd[1];
+							String sellerB = partsCmd[2];
+							String quantityB = partsCmd[3];
+							String mensagemB = ("buy " + wineB + " " + sellerB + " " + quantityB);
+
+							FileInputStream fisB = new FileInputStream(filesPath + "/Users/" + userId + "/" +  "cert.cer");
+							CertificateFactory cfB = CertificateFactory.getInstance("X.509");
+							X509Certificate certB = (X509Certificate) cfB.generateCertificate(fisB);
+							PublicKey chavePublicaB = certB.getPublicKey();
+
+							byte[] msgEncriptadaB = (byte[]) inStream.readObject();
+
+							if (encryptionManager.signatureConfirmationBuySell(msgEncriptadaB, chavePublicaB, mensagemB)){
+								outStream.writeObject(wineManager.buyWine(userManager, partsCmd[1], partsCmd[2], user.getId(), Integer.parseInt(partsCmd[3])));
+							}else{
+								outStream.writeObject("Erro: assinatura errada");
+							}
+
 							break;
 						case "wallet":
 							outStream.writeObject(user.getBalance());

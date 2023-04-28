@@ -211,7 +211,21 @@ public class myClient {
                 String wineS = scanner.next();
                 int value = Integer.parseInt(scanner.next());
                 int quantity = Integer.parseInt(scanner.next());
-                out.writeObject("sell " + wineS + " " + value + " " + quantity);
+
+                Signature sS;
+                byte[] signedMessageSell = null;
+                try {
+                    sS = Signature.getInstance("MD5withRSA");
+                    sS.initSign(privateKey);
+                    sS.update(("sell " + wineS + " " +  value + " " + quantity).getBytes());
+                    //Assinar nonce e enviar nonce assinado
+                    signedMessageSell = sS.sign();
+                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                    e.printStackTrace();
+                }
+
+                out.writeObject("sell " + wineS + " " +  value + " " + quantity);
+                out.writeObject(signedMessageSell);
                 System.out.println(in.readObject());
                 break;
             case "v":
@@ -229,7 +243,23 @@ public class myClient {
                 String wineB = scanner.next();
                 String seller = scanner.next();
                 int quantityB = Integer.parseInt(scanner.next());
+
+
+
+                Signature sb;
+                byte[] signedMessageBuy = null;
+                try {
+                    sb = Signature.getInstance("MD5withRSA");
+                    sb.initSign(privateKey);
+                    sb.update(("buy " + clientId + " " + wineB + " " + seller + " " + quantityB).getBytes());
+                    //Assinar nonce e enviar nonce assinado
+                    signedMessageBuy = sb.sign();
+                } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+                    e.printStackTrace();
+                }
+
                 out.writeObject("buy " + wineB + " " + seller + " " + quantityB);
+                out.writeObject(signedMessageBuy);
                 String resposta = (String) in.readObject();
                 System.out.println(resposta);
                 break;
