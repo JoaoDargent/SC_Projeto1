@@ -314,7 +314,6 @@ public class myClient {
                 System.exit(0);
         }
 
-
     }
     private static byte[] parseByteArray(String s) {
         String[] parts = s.substring(2, s.length() - 1).split(",");

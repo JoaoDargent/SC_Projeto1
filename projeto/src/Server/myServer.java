@@ -268,7 +268,7 @@ public class myServer{
 						case "talk":
 							String receiver = partsCmd[2];
 							byte[] mensagem = (byte[]) inStream.readObject();
-							outStream.writeUTF(messageManager.talk(fileManager, userManager, user, receiver, mensagem));
+							outStream.writeObject(messageManager.talk(fileManager, userManager, user, receiver, mensagem));
 							break;
 						case "read":
 							outStream.writeObject(messageManager.read(fileManager, user));

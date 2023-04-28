@@ -31,7 +31,10 @@ Cliente:
     - keystore: "keystore.filipa"
     - keystore password: filipapw
     - alias: "filipaKS"
-    - key password for "filipaKS": "filipapw"
+
+    - keystore: "keystore.joao"
+    - keystore password: joaopw
+    - alias: "joaoKS"
 
 Criar o par de chaves RSA do servidor e o seu certificado auto-assinado:
     keytool -genkeypair -alias serverKS -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.server

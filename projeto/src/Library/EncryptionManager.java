@@ -154,5 +154,4 @@ public class EncryptionManager {
 		byte[] msgBytes = c.doFinal(encryptedMsg);
 		return new String(msgBytes);
 	}
-
 }
