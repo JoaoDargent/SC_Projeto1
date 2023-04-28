@@ -194,7 +194,7 @@ public class myServer{
 							if (!usersFile.exists()) {
 								usersFile.createNewFile();
 								userRegister(user);
-								encryptionManager.encryptUsersTxt(usersTxtkey);
+								paramsPBE = encryptionManager.encryptUsersTxt(usersTxtkey);
 							}
 						}
 

@@ -52,6 +52,15 @@ Exportar o certificado auto-assinado do cliente <filipa>:
 Importar certificado do cliente <filipa> para a truststore:
     keytool -importcert -alias filipaKS -file certfilipa.cer -storetype JKS -keystore truststore.clients
 
+Criar o par de chaves RSA do cliente <joao> e o seu certificado auto-assinado:
+    keytool -genkeypair -alias joaoKS -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore keystore.joao
+
+Exportar o certificado auto-assinado do cliente <joao>:
+    keytool -exportcert -alias joaoKS -file certjoao.cer -storetype PKCS12 -keystore keystore.joao
+
+Importar certificado do cliente <joao> para a truststore:
+    keytool -importcert -alias joaoKS -file certjoao.cer -storetype JKS -keystore truststore.clients
+
 Ver o conteúdo da keystore do servidor:
     keytool -list -storetype JCEKS -keystore keystore.server
 

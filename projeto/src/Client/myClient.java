@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.cert.CertificateFactory;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
@@ -53,7 +54,13 @@ public class myClient {
         System.out.println("Note que serveraddress tem o seguinte formato: <IP/hostname>[:Port]. Caso não introduza a porta, será utilizada a 12345.");
 
         //String fromUser = scanner.nextLine();
-        String fromUser = "Tintolmarket localhost truststore.clients keystore.filipa filipapw filipa";
+        String fromUserInput = scanner.nextLine();
+        String fromUser = null;
+        if (fromUserInput.equals("f")){
+            fromUser = "Tintolmarket localhost truststore.clients keystore.filipa filipapw filipa";
+        }else{
+            fromUser = "Tintolmarket localhost truststore.clients keystore.joao joaopw joao";
+        }
         //If para caso nao seja passada a password
         if (fromUser.split(" ").length == 3) {
             System.out.println("Olá " + fromUser.split(" ")[2] + "! Por favor introduza a password: ");
@@ -129,7 +136,7 @@ public class myClient {
             out.writeObject(signedNonce);
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira L");
-                recebeComandos(cSocket, scanner, in, out, userID);
+                recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         } else {
             /*
@@ -153,13 +160,13 @@ public class myClient {
             System.out.println("Verificacao feita com sucesso!");
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
-                recebeComandos(cSocket, scanner, in, out, userID);
+                recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         }else if (respostaCredenciais.equals("Verificacao feita com sucesso") && !registered) {
             System.out.println("Registado com sucesso!");
             while (true) {
                 System.out.println("Insira um comando! caso queira ver a lista de comandos insira help");
-                recebeComandos(cSocket, scanner, in, out, userID);
+                recebeComandos(cSocket, scanner, in, out, userID, truststore, truststorePwd);
             }
         }else {
             System.out.println(respostaCredenciais);
@@ -177,7 +184,7 @@ public class myClient {
         return buffer.array();
     }
 
-    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId) throws IOException, ClassNotFoundException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    private void recebeComandos(Socket cSocket, Scanner scanner, ObjectInputStream in, ObjectOutputStream out, String clientId, String truststore, String truststorePwd) throws IOException, ClassNotFoundException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, CertificateException, InvalidAlgorithmParameterException {
         String comando = scanner.next();
         String[] comandoSplit = comando.split(" ");
 
@@ -247,12 +254,15 @@ public class myClient {
                 //out.writeObject("talk " + user + " " + message);
                 out.writeObject("talk " + clientId + " " + user);
 
-                // Load the keystore
-                KeyStore truststore = KeyStore.getInstance(KeyStore.getDefaultType());
-                Key receiverPublicKey =  truststore.getKey(user, truststorePwd.toCharArray());
+                FileInputStream kfile = new FileInputStream(truststore); //keystore
+                KeyStore tstore = KeyStore.getInstance("JKS");
+                tstore.load(kfile, truststorePwd.toCharArray()); //password da keystore
+                Certificate cert = tstore.getCertificate(clientId + "KS"); //alias da keypair
 
+                // Get the PublicKey instance
+                PublicKey publicReceiverKey = cert.getPublicKey();
                 // Encrypt message
-                byte [] encryptedmsg = encryptionManager.encryptMsg(receiverPublicKey, message);
+                byte [] encryptedmsg = encryptionManager.encryptMsg(publicReceiverKey, message);
                 out.writeObject(encryptedmsg);
 
                 System.out.println(in.readObject());
@@ -266,7 +276,7 @@ public class myClient {
                     int index = line.indexOf(":");
                     if(index != -1){
                         //imprime sender
-                        System.out.println(line.substring(0, index) + ":");
+                        System.out.print(line.substring(0, index) + ":");
                         //decifra mensagem cifrada
                         byte[] mensagemCifrada = parseByteArray(line.substring(index + 1));
                         String mensagem = encryptionManager.decryptMsg(privateKey, mensagemCifrada);
@@ -307,7 +317,7 @@ public class myClient {
 
     }
     private static byte[] parseByteArray(String s) {
-        String[] parts = s.substring(1, s.length() - 1).split(",");
+        String[] parts = s.substring(2, s.length() - 1).split(",");
         byte[] result = new byte[parts.length];
         for (int i = 0; i < parts.length; i++) {
             result[i] = Byte.parseByte(parts[i].trim());

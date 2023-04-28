@@ -19,6 +19,8 @@ import java.nio.ByteBuffer;
 
 public class EncryptionManager {
 
+
+
     public static File encryptFile(String fileToEncrypt, SecretKey secretKey) throws Exception {
 
         // create a new file object
@@ -139,18 +141,16 @@ public class EncryptionManager {
         Files.write(Paths.get(myServer.filesPath + "users.txt"), dec);
     }
 
-    public byte[] encryptMsg(Key key, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException  {
-		Cipher c = Cipher.getInstance("RSA");
+    public byte[] encryptMsg(PublicKey key, String msg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		c.init(Cipher.ENCRYPT_MODE, key);
-		System.out.println(key);
 		byte[] msgBytes = msg.getBytes( );
 		return c.doFinal(msgBytes);
-	}
+    }
 
-    public String decryptMsg(Key key, byte[] encryptedMsg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		Cipher c = Cipher.getInstance("RSA");
+    public String decryptMsg(PrivateKey key, byte[] encryptedMsg) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+		Cipher c = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		c.init(Cipher.DECRYPT_MODE, key);
-		System.out.println(key);
 		byte[] msgBytes = c.doFinal(encryptedMsg);
 		return new String(msgBytes);
 	}
