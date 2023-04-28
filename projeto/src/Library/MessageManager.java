@@ -53,9 +53,10 @@ public class MessageManager {
             ObjectOutputStream out = new ObjectOutputStream(fout);
             out.writeObject(sndr);
             out.writeObject(encmsg);
+            out.flush();
             out.close();
-            fout.close();
-            //fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
+            fout.close();*/
+            fm.writeContentToFile(file, sender.getId() + " : " + Arrays.toString(encryptedMessage) ,true);
             return "Mensagem enviada com sucesso";
         }
     }

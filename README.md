@@ -67,6 +67,8 @@ Importar certificado do cliente <joao> para a truststore:
 Ver o conteúdo da keystore do servidor:
     keytool -list -storetype JCEKS -keystore keystore.server
 
+Apagar entradas da truststore:
+    keytool -delete -alias filipaKS -keystore truststore.clients
 
 ## Funcionalidades atuais
 
